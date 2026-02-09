@@ -1,98 +1,155 @@
 <%- include('./partials/Header.ejs') %>
 
-  <main style="padding: var(--spacing-xl) 0; background-color: var(--color-bg-primary);">
-    <div class="container"
-      style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; max-width: 1200px;">
+  <main style="padding: 4rem 0; background-color: var(--color-bg-primary);">
+    <div class="container">
 
-      <!-- Image Gallery -->
-      <div class="product-gallery" style="display: grid; gap: 1rem;">
-        <!-- Main Image -->
-        <div
-          style="border-radius: var(--border-radius-lg); overflow: hidden; background: white; box-shadow: var(--shadow-sm);">
-          <img id="mainImage" src="<%= product.mainImage %>" alt="<%= product.title %>"
-            style="width: 100%; height: auto; object-fit: cover; max-height: 600px;">
-        </div>
-
-        <!-- Thumbnails -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
-          <% [product.mainImage, product.image2, product.image3, product.image4, product.image5].forEach((img, index)=>
-            { %>
-            <% if(img) { %>
-              <div onclick="changeImage('<%= img %>')"
-                style="cursor: pointer; border-radius: var(--border-radius-md); overflow: hidden; height: 100px;">
-                <img src="<%= img %>" alt="Thumbnail" style="width: 100%; height: 100%; object-fit: cover;">
-              </div>
-              <% } %>
-                <% }) %>
-        </div>
+      <!-- Breadcrumb -->
+      <div
+        style="margin-bottom: 2rem; font-size: 0.9rem; color: var(--color-text-secondary); display: flex; align-items: center; flex-wrap: wrap;">
+        <a href="/" style="color: var(--color-text-secondary); text-decoration: none;">Home</a>
+        <i class="ri-arrow-right-s-line" style="margin: 0 0.5rem;"></i>
+        <a href="/clothings/<%= (product.category && product.category.length > 0) ? product.category[0] : 'equipment' %>"
+          style="color: var(--color-text-secondary); text-transform: capitalize; text-decoration: none;">
+          <%= (product.category && product.category.length> 0) ? product.category[0] : 'Medical' %>
+        </a>
+        <i class="ri-arrow-right-s-line" style="margin: 0 0.5rem;"></i>
+        <span style="color: var(--color-accent-primary); font-weight: 500;">
+          <%= product.title %>
+        </span>
       </div>
 
-      <!-- Product Info -->
-      <div class="product-details" style="position: sticky; top: 120px;">
-        <p
-          style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">
-          Bunny Hop</p>
-        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">
-          <%= product.title %>
-        </h1>
+      <div class="product-grid"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 4rem; align-items: start;">
 
-        <!-- Price & Discount -->
-        <div style="margin-bottom: 2rem;">
-          <% if (typeof discountPercent !=='undefined' && discountPercent> 0) { %>
-            <div
-              style="display: inline-block; background: var(--color-accent-light); color: var(--color-accent-primary); padding: 0.5rem 1rem; border-radius: 4px; margin-bottom: 1rem;">
-              <strong>
-                <%= discountPercent %>% OFF
-              </strong> with <%= discountName %>
-            </div>
-            <div style="display: flex; align-items: baseline; gap: 1rem;">
-              <span style="font-size: 2rem; font-weight: 600; color: var(--color-accent-primary);">PKR <%=
-                  discountedPrice.toFixed(0) %></span>
-              <span style="font-size: 1.2rem; text-decoration: line-through; color: var(--color-text-secondary);">PKR
-                <%= product.price %>
-              </span>
-            </div>
-            <span style="font-size: 0.9rem; color: var(--color-text-secondary);">
-              Shipping 250.00
-            </span>
-            <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-top: 0.5rem;">Offer valid until <%=
-                new Date(discountEnd).toLocaleDateString() %>
-            </p>
-            <% } else { %>
-              <span style="font-size: 2rem; font-weight: 600;">PKR <%= product.price %></span>
-              <% } %>
-        </div>
+        <!-- Image Gallery -->
+        <div class="product-gallery" style="display: grid; gap: 1rem;">
+          <!-- Main Image -->
+          <div
+            style="border-radius: var(--border-radius-lg); overflow: hidden; background: white; border: 1px solid var(--color-border); aspect-ratio: 1; display: flex; align-items: center; justify-content: center;">
+            <img id="mainImage" src="<%= product.mainImage %>" alt="<%= product.title %>"
+              style="width: 100%; height: 100%; object-fit: contain; max-height: 600px;">
+          </div>
 
-        <!-- Colors -->
-        <div style="margin-bottom: 2rem;">
-          <h3 style="font-size: 1rem; margin-bottom: 0.8rem;">Select Color</h3>
-          <div style="display: flex; gap: 10px;">
-            <% if (product.color && Array.isArray(product.color)) { %>
-              <% product.color.forEach(color=> { %>
-                <button onclick="selectColor(this)" class="color-dot"
-                  style="width: 32px; height: 32px; border-radius: 50%; background-color: <%= color %>; border: 2px solid #ddd; cursor: pointer; transition: transform 0.2s;"></button>
-                <% }) %>
-                  <% } %>
+          <!-- Thumbnails -->
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem;">
+            <% [product.mainImage, product.image2, product.image3, product.image4, product.image5].forEach((img,
+              index)=>
+              { %>
+              <% if(img) { %>
+                <div onclick="changeImage('<%= img %>')"
+                  style="cursor: pointer; border-radius: var(--border-radius-md); overflow: hidden; height: 80px; border: 1px solid var(--color-border); background: white; display: flex; align-items: center; justify-content: center;">
+                  <img src="<%= img %>" alt="Thumbnail" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+                <% } %>
+                  <% }) %>
           </div>
         </div>
 
-        <!-- Actions -->
-        <div style="display: flex; gap: 1rem; margin-bottom: 2.5rem;" class="action">
-          <button onclick="window.location.href='/checkout/<%= product.id %>'" class="btn btn-primary"
-            style="flex: 2; font-size: 1.1rem;">
-            Buy Now
-          </button>
-          <button data-fitId="<%= product._id %>" class="btn btn-outline add-btn" style="flex: 1; font-size: 1.1rem;">
-            <i class="ri-shopping-cart-line"></i> Add to Cart
-          </button>
-        </div>
+        <!-- Product Info -->
+        <div class="product-details" style="position: sticky; top: 100px;">
 
-        <!-- Description -->
-        <div style="border-top: 1px solid var(--color-border); padding-top: 2rem;">
-          <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">Description</h3>
-          <p style="color: var(--color-text-secondary); line-height: 1.8;">
-            <%= product.description %>
-          </p>
+          <span
+            style="background: rgba(6,182,212,0.1); color: var(--color-accent-primary); padding: 0.3rem 0.8rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem; margin-bottom: 1rem; display: inline-block;">
+            <i class="ri-medal-fill"></i> Medical Grade
+          </span>
+
+          <h1
+            style="font-size: 2.2rem; margin-bottom: 0.5rem; font-weight: 800; color: var(--color-text-primary); line-height: 1.2;">
+            <%= product.title %>
+          </h1>
+
+          <!-- Rating -->
+          <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <div style="color: #F59E0B; font-size: 1rem;">
+              <i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i
+                class="ri-star-fill"></i><i class="ri-star-fill"></i>
+            </div>
+            <span style="font-size: 0.9rem; color: var(--color-text-secondary);">(Certified Product)</span>
+            <span style="width: 4px; height: 4px; background: #cbd5e1; border-radius: 50%;"></span>
+            <span style="font-size: 0.9rem; color: var(--color-accent-primary);">In Stock</span>
+          </div>
+
+          <!-- Price & Discount -->
+          <div style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border);">
+            <% if (typeof discountPercent !=='undefined' && discountPercent> 0) { %>
+              <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                <span style="font-size: 2.5rem; font-weight: 700; color: var(--color-accent-primary);">PKR <%=
+                    discountedPrice.toFixed(0) %></span>
+                <span
+                  style="font-size: 1.25rem; text-decoration: line-through; color: var(--color-text-secondary); opacity: 0.7;">PKR
+                  <%= product.price %></span>
+              </div>
+              <div
+                style="display: inline-block; background: #ef4444; color: white; padding: 0.2rem 0.8rem; border-radius: 4px; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600;">
+
+                Limited Time: <%= discountPercent %>% OFF with <%= discountName %>
+              </div>
+
+              <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-top: 0.5rem;">Offer valid until
+                <%= new Date(discountEnd).toLocaleDateString() %>
+              </p>
+              <% } else { %>
+                <span style="font-size: 2.5rem; font-weight: 700; color: var(--color-text-primary);">PKR <%=
+                    product.price %></span>
+                <% } %>
+          </div>
+
+          <!-- Colors -->
+          <div style="margin-bottom: 2rem;">
+            <% if (product.color && Array.isArray(product.color)) { %>
+              <h3
+                style="font-size: 0.9rem; margin-bottom: 0.8rem; font-weight: 600; color: var(--color-text-primary); text-transform: uppercase;">
+                Select Variant</h3>
+              <div style="display: flex; gap: 10px;">
+                <% product.color.forEach(color=> { %>
+                  <button onclick="selectColor(this)" class="color-dot"
+                    style="width: 32px; height: 32px; border-radius: 50%; background-color: <%= color %>; border: 2px solid #ddd; cursor: pointer; transition: all 0.2s; position: relative;"></button>
+                  <% }) %>
+              </div>
+              <% } %>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; gap: 1rem; margin-bottom: 2.5rem; flex-wrap: wrap;" class="action">
+            <button onclick="window.location.href='/checkout/<%= product.id %>'" class="btn btn-primary"
+              style="flex: 2; padding: 1rem 2rem; font-size: 1.1rem; min-width: 180px;">
+              Buy Now
+            </button>
+            <button data-fitId="<%= product._id %>" class="btn btn-outline add-btn"
+              style="flex: 1; padding: 1rem 2rem; font-size: 1.1rem; min-width: 180px;">
+              <i class="ri-shopping-cart-2-line"></i> Add to Cart
+            </button>
+          </div>
+
+          <!-- Trust Benefits -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+            <div style="display: flex; gap: 0.8rem; align-items: center;">
+              <i class="ri-shield-check-fill" style="font-size: 1.5rem; color: var(--color-accent-primary);"></i>
+              <div>
+                <h4 style="font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary); margin:0;">Genuine
+                  Product</h4>
+                <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin:0;">Direct from Manufacturer</p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.8rem; align-items: center;">
+              <i class="ri-truck-fill" style="font-size: 1.5rem; color: var(--color-accent-primary);"></i>
+              <div>
+                <h4 style="font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary); margin:0;">Fast
+                  Delivery</h4>
+                <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin:0;">Priority Shipping Avail.</p>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Description -->
+          <div style="border-top: 1px solid var(--color-border); padding-top: 2rem;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1rem; font-weight: 600; color: var(--color-text-primary);">
+              Product Description</h3>
+            <div style="color: var(--color-text-secondary); line-height: 1.7; font-size: 0.95rem;">
+              <%= product.description %>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -110,43 +167,45 @@
         document.querySelectorAll('.color-dot').forEach(d => {
           d.style.transform = 'scale(1)';
           d.style.borderColor = '#ddd';
+          d.style.boxShadow = 'none';
         });
-        btn.style.transform = 'scale(1.2)';
-        btn.style.borderColor = 'var(--color-text-primary)';
+        btn.style.transform = 'scale(1.1)';
+        btn.style.borderColor = 'var(--color-accent-primary)';
+        btn.style.boxShadow = '0 0 0 4px var(--color-accent-light)';
       }
 
       // Add to Cart Logic
       const addBtns = document.querySelectorAll('.add-btn');
       const cartCount = document.querySelector(".quantity")
-addBtns.forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const id = btn.dataset.fitid;
-     try {
-      const res = await fetch(`/add-to-cart/${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+      addBtns.forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.fitid;
+          try {
+            const res = await fetch(`/add-to-cart/${id}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await res.json();
+            const count = typeof data.cartCount === 'number'
+              ? data.cartCount
+              : (Array.isArray(data.cart) ? data.cart.length : 0);
+
+            cartCount.innerText = count;
+            cartCount.style.display = count > 0 ? "inline-block" : "none";
+
+            showToast("Added to MedCart! ⚕️");
+
+          } catch (err) {
+            console.error(err);
+          }
+        });
       });
-
-      const data = await res.json();
-      const count = typeof data.cartCount === 'number'
-        ? data.cartCount
-        : (Array.isArray(data.cart) ? data.cart.length : 0);
-
-      cartCount.innerText = count;
-      cartCount.style.display = count > 0 ? "inline-block" : "none";
-
-      showToast("Added to Cart! 🐰");
-
-    } catch (err) {
-      console.error(err);
-    }
-  });
-});
 
       function showToast(message) {
         const toast = document.createElement('div');
         toast.innerText = message;
-        toast.style.cssText = "position: fixed; top: 20px; right: 20px; background: #dcfce7; color: #166534; padding: 1rem 2rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 3000; animation: slideIn 0.3s ease-out;";
+        toast.style.cssText = "position: fixed; top: 100px; right: 20px; background: var(--color-active-primary); color: white; padding: 1rem 2rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 3000; animation: slideIn 0.3s ease-out; font-weight: 600;";
         document.body.appendChild(toast);
 
         setTimeout(() => {
@@ -156,10 +215,33 @@ addBtns.forEach(btn => {
       }
     </script>
 
-    <!-- Mobile Responsive Styles inline -->
     <style>
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+
       @media (max-width: 768px) {
-        .container {
+        .product-grid {
           grid-template-columns: 1fr !important;
           gap: 2rem !important;
         }
@@ -169,12 +251,7 @@ addBtns.forEach(btn => {
         }
 
         h1 {
-          font-size: 2rem !important;
-        }
-      }
-      @media (max-width: 768px) {
-        .action {
-          flex-direction: column;
+          font-size: 1.8rem !important;
         }
       }
     </style>
