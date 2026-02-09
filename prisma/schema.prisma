@@ -1,0 +1,297 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────
+
+enum UserRole {
+  CUSTOMER
+  B2B_CLIENT
+  ADMIN
+  RIDER
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum SalesChannel {
+  WEBSITE
+  WHATSAPP
+  FACEBOOK
+  INSTAGRAM
+  TIKTOK
+}
+
+// ─── Auth Models (NextAuth) ──────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  phone         String?
+  role          UserRole  @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  cart          Cart?
+  orders        Order[]
+  organization  Organization? @relation("OrgMembers", fields: [organizationId], references: [id])
+  organizationId String?
+  assignedOrders Order[]    @relation("RiderOrders")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─── B2B Organization ────────────────────────────────────
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  address   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members   User[]   @relation("OrgMembers")
+  orders    Order[]  @relation("OrgOrders")
+
+  @@map("organizations")
+}
+
+// ─── Supply Chain ────────────────────────────────────────
+
+model SupplyChain {
+  id        String   @id @default(cuid())
+  name      String
+  logo      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products  Product[]
+
+  @@map("supply_chains")
+}
+
+// ─── Product Catalog ─────────────────────────────────────
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String
+  slug      String     @unique
+  icon      String?
+  image     String?
+  parentId  String?
+  parent    Category?  @relation("SubCategories", fields: [parentId], references: [id])
+  children  Category[] @relation("SubCategories")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  products  Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String   @db.Text
+  images        String[]
+  b2cPrice      Float
+  b2bPrice      Float
+  stock         Int      @default(0)
+  featured      Boolean  @default(false)
+  trending      Boolean  @default(false)
+  flashDeal     Boolean  @default(false)
+  flashDealEnd  DateTime?
+  published     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  categoryId    String
+  category      Category    @relation(fields: [categoryId], references: [id])
+  supplyChainId String?
+  supplyChain   SupplyChain? @relation(fields: [supplyChainId], references: [id])
+
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+
+  @@map("products")
+}
+
+// ─── Cart ────────────────────────────────────────────────
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  items     CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  quantity  Int     @default(1)
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+  @@map("cart_items")
+}
+
+// ─── Orders ──────────────────────────────────────────────
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float
+  shippingAddress String      @db.Text
+  phone           String?
+  notes           String?     @db.Text
+  estimatedDelivery DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  riderId         String?
+  rider           User?       @relation("RiderOrders", fields: [riderId], references: [id])
+  organizationId  String?
+  organization    Organization? @relation("OrgOrders", fields: [organizationId], references: [id])
+
+  items           OrderItem[]
+  invoice         Invoice?
+  tracking        DeliveryTracking[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  price     Float
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+// ─── Invoice ─────────────────────────────────────────────
+
+model Invoice {
+  id            String   @id @default(cuid())
+  invoiceNumber String   @unique
+  amount        Float
+  tax           Float    @default(0)
+  totalAmount   Float
+  issuedAt      DateTime @default(now())
+  orderId       String   @unique
+  order         Order    @relation(fields: [orderId], references: [id])
+
+  @@map("invoices")
+}
+
+// ─── Delivery Tracking ──────────────────────────────────
+
+model DeliveryTracking {
+  id        String      @id @default(cuid())
+  status    OrderStatus
+  message   String?
+  location  String?
+  timestamp DateTime    @default(now())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("delivery_tracking")
+}
+
+// ─── Sales Records ──────────────────────────────────────
+
+model SalesRecord {
+  id        String       @id @default(cuid())
+  channel   SalesChannel
+  amount    Float
+  notes     String?      @db.Text
+  isManual  Boolean      @default(false)
+  date      DateTime     @default(now())
+  createdAt DateTime     @default(now())
+
+  @@map("sales_records")
+}
+
+// ─── Admin Logs ─────────────────────────────────────────
+
+model AdminLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String?  @db.Text
+  adminId   String
+  createdAt DateTime @default(now())
+
+  @@map("admin_logs")
+}
