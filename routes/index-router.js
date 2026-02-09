@@ -130,7 +130,7 @@ router.get('/', isLoggedIn, addToCart, async function (req, res) {
       error: ["Something went wrong loading the homepage."],
       req: req,
       cart: res.locals.cart || [],
-      heroImg,
+      cart: res.locals.cart || [],
       testimonials: []
     });
   }
@@ -530,7 +530,7 @@ router.get('/fits/:gender', isLoggedIn, addToCart, async (req, res) => {
 
     const genderParam = req.params.gender.toLowerCase().slice(0, -1);
     let selectedProducts = await productsModel.find({ gender: genderParam, isApproved: true });
-  const isUnsigned = !req.user || req.user === 'unsigned';
+    const isUnsigned = !req.user || req.user === 'unsigned';
 
     selectedProducts = await Promise.all(
       selectedProducts.map(async (p) => {
@@ -556,7 +556,7 @@ router.get('/fits/:gender', isLoggedIn, addToCart, async (req, res) => {
       gender: displayGender,
       gen: true,
       cat: false,
-      cart: isUnsigned ? res.locals.cart || [] : cart ,
+      cart: isUnsigned ? res.locals.cart || [] : cart,
       req
     });
   } catch (err) {
@@ -893,8 +893,8 @@ router.get('/order/:id', isLoggedIn, async (req, res) => {
   try {
     const orderId = req.params.id;
     const isUnsigned = !req.user || req.user === "unsigned"
-    if(!isUnsigned){
-      var user = userModel.findOne({username: req.user.username})
+    if (!isUnsigned) {
+      var user = userModel.findOne({ username: req.user.username })
     }
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
@@ -915,7 +915,7 @@ router.get('/order/:id', isLoggedIn, async (req, res) => {
       user: req.user || null,
       order: order,
       userType,
-      cart: isUnsigned ? res.locals.cart || [] : user.cart ,
+      cart: isUnsigned ? res.locals.cart || [] : user.cart,
     });
 
   } catch (err) {
