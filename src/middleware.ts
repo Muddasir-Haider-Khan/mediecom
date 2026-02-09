@@ -1,44 +1,37 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 
-export async function middleware(req: NextRequest) {
+export function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
-    const token = await getToken({
-        req,
-        secret: process.env.NEXTAUTH_SECRET,
-    });
+    // Check for session cookie (works with both secure and non-secure contexts)
+    const hasSession =
+        req.cookies.has("next-auth.session-token") ||
+        req.cookies.has("__Secure-next-auth.session-token") ||
+        req.cookies.has("authjs.session-token") ||
+        req.cookies.has("__Secure-authjs.session-token");
 
-    const role = token?.role as string | undefined;
-
-    // Admin routes protection
+    // Admin routes — require login (role check happens in admin layout)
     if (pathname.startsWith("/admin")) {
-        if (!token) {
+        if (!hasSession) {
             return NextResponse.redirect(new URL("/login", req.url));
-        }
-        if (role !== "ADMIN") {
-            return NextResponse.redirect(new URL("/", req.url));
         }
     }
 
-    // B2B routes protection
+    // B2B routes — require login (role check happens in b2b layout)
     if (
         pathname.startsWith("/b2b") &&
         !pathname.startsWith("/b2b/login") &&
         !pathname.startsWith("/b2b/register")
     ) {
-        if (!token) {
+        if (!hasSession) {
             return NextResponse.redirect(new URL("/b2b/login", req.url));
-        }
-        if (role !== "B2B_CLIENT" && role !== "ADMIN") {
-            return NextResponse.redirect(new URL("/", req.url));
         }
     }
 
-    // Customer dashboard protection
+    // Customer dashboard — require login
     if (pathname.startsWith("/dashboard")) {
-        if (!token) {
+        if (!hasSession) {
             return NextResponse.redirect(new URL("/login", req.url));
         }
     }
