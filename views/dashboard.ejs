@@ -1,0 +1,197 @@
+<%- include('./partials/Header.ejs', {hidden: true}) %>
+
+    <main style="padding: var(--spacing-xl) 0; background-color: var(--color-bg-secondary); min-height: 80vh;">
+        <div class="container">
+
+            <!-- Flash Messages -->
+            <% if(typeof error !=='undefined' && error.length> 0) { %>
+                <div
+                    style="background: #fee2e2; color: #dc2626; padding: 1rem; border-radius: var(--border-radius-md); margin-bottom: 2rem; text-align: center;">
+                    <%= error[0] %>
+                </div>
+                <% } %>
+                    <% if (typeof success !=='undefined' && success.length> 0) { %>
+                        <div
+                            style="background: #dcfce7; color: #166534; padding: 1rem; border-radius: var(--border-radius-md); margin-bottom: 2rem; text-align: center;">
+                            <%= success[0] %>
+                        </div>
+                        <% } %>
+
+                            <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+
+                                <!-- Sidebar -->
+                                <aside>
+                                    <%- include('./partials/SellerSidebar.ejs') %>
+                                </aside>
+
+                                <!-- Main Content -->
+                                <section
+                                    style="background: white; padding: 2.5rem; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm);">
+                                    <div
+                                        style="margin-bottom: 2rem; border-bottom: 1px solid var(--color-border); padding-bottom: 1rem;">
+                                        <% if (edit) { %>
+                                            <h2 style="font-size: 1.5rem;">Edit Product</h2>
+                                            <% } else { %>
+                                                <h2 style="font-size: 1.5rem;">Add New Product</h2>
+                                                <% } %>
+                                    </div>
+
+                                    <form action="<%= edit ? '/seller/update/' + product._id : '/seller/push' %>"
+                                        method="POST" enctype="multipart/form-data">
+
+                                        <div
+                                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                                            <div>
+                                                <label for="title"
+                                                    style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Product
+                                                    Title</label>
+                                                <input type="text" id="title" name="title"
+                                                    value="<%= edit ? product.title : '' %>" required
+                                                    style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px;">
+                                            </div>
+                                            <div>
+                                                <label for="price"
+                                                    style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Price
+                                                    (PKR)</label>
+                                                <input type="number" id="price" name="price"
+                                                    value="<%= edit ? product.price : '' %>" required
+                                                    style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px;">
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-bottom: 1.5rem;">
+                                            <label for="description"
+                                                style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Description</label>
+                                            <textarea id="description" name="description" rows="4" required
+                                                style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px; font-family: inherit;"><%= edit ? product.description : '' %></textarea>
+                                        </div>
+
+                                        <div
+                                            style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                                            <div>
+                                                <label for="gender"
+                                                    style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Gender</label>
+                                                <select id="gender" name="gender" required
+                                                    style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px; background: white;">
+                                                    <option value="boy" <%=edit && product.gender==='boy' ? 'selected'
+                                                        : '' %>>Boy</option>
+                                                    <option value="girl" <%=edit && product.gender==='girl' ? 'selected'
+                                                        : '' %>>Girl</option>
+                                                    <option value="unisex" <%=edit && product.gender==='unisex'
+                                                        ? 'selected' : '' %>>Unisex</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label for="category"
+                                                    style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Category</label>
+                                                <select id="category" name="category" required
+                                                    style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px; background: white;">
+                                                    <option value="">Select Category</option>
+                                                    <% if(typeof categories !=='undefined' && categories.length> 0) { %>
+                                                        <% for(let i=0; i < categories.length; i++) { %>
+                                                            <option value="<%= categories[i].name %>" <%=edit &&
+                                                                product.category &&
+                                                                product.category.includes(categories[i].name)
+                                                                ? 'selected' : '' %>><%= categories[i].name %>
+                                                            </option>
+                                                            <% } %>
+                                                                <% } %>
+                                                                    <option value="Rompers">Rompers (Legacy)</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label for="color"
+                                                    style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Colors</label>
+                                                <input type="text" id="color" name="color"
+                                                    value="<%= edit ? product.color : '' %>" placeholder="white, blue"
+                                                    required
+                                                    style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px;">
+                                            </div>
+                                        </div>
+
+                                        <!-- Image Upload -->
+                                        <div style="margin-bottom: 2rem;">
+                                            <label
+                                                style="display: block; margin-bottom: 1rem; font-weight: 500;">Product
+                                                Images (5 Required)</label>
+                                            <div
+                                                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 1rem;">
+                                                <% for (let i=0; i < 5; i++) { %>
+                                                    <label style="cursor: pointer; display: block;">
+                                                        <div class="image-box"
+                                                            style="width: 100%; height: 100px; border: 2px dashed var(--color-border); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; position: relative; background: #fafafa;">
+
+                                                            <span
+                                                                class="upload-text <%= edit && product.images && product.images[i] ? 'hidden' : '' %>"
+                                                                style="color: var(--color-text-secondary); font-size: 0.8rem;">Upload</span>
+
+                                                            <input type="file" name="images" accept="image/*"
+                                                                class="imageInput hidden" <%=edit ? '' : (i===0
+                                                                ? 'required' : '' ) %>>
+                                                            <!-- Only require first one strictly, usually back-end checks count -->
+
+                                                            <% if (edit && product.images && product.images[i]) { %>
+                                                                <img src="<%= product.images[i] %>" class="preview"
+                                                                    style="width: 100%; height: 100%; object-fit: cover;">
+                                                                <% } else { %>
+                                                                    <img class="preview hidden"
+                                                                        style="width: 100%; height: 100%; object-fit: cover;">
+                                                                    <% } %>
+                                                        </div>
+                                                        <p
+                                                            style="text-align: center; font-size: 0.8rem; margin-top: 5px; color: var(--color-text-secondary);">
+                                                            Image <%= i+1 %>
+                                                        </p>
+                                                    </label>
+                                                    <% } %>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem;">
+                                            <%= edit ? 'Update Product' : 'Create Product' %>
+                                        </button>
+
+                                    </form>
+                                </section>
+
+                            </div>
+        </div>
+    </main>
+
+    <%- include('./partials/Footer.ejs') %>
+
+        <script>
+            const fileInputs = document.querySelectorAll('.imageInput');
+            const previews = document.querySelectorAll('.preview');
+            const uploadTexts = document.querySelectorAll('.upload-text');
+
+            fileInputs.forEach((input, index) => {
+                input.addEventListener('change', function () {
+                    const file = input.files[0];
+                    const preview = previews[index];
+                    const uploadText = uploadTexts[index];
+
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            preview.src = e.target.result;
+                            preview.classList.remove('hidden');
+                            if (uploadText) uploadText.classList.add('hidden');
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+        </script>
+
+        <style>
+            .hidden {
+                display: none !important;
+            }
+
+            @media(max-width: 768px) {
+                .container>div {
+                    grid-template-columns: 1fr !important;
+                }
+            }
+        </style>

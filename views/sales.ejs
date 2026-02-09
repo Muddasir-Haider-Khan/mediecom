@@ -1,0 +1,237 @@
+<%- include('./partials/Header.ejs', {hidden: true}) %>
+
+    <main style="padding: var(--spacing-xl) 0; background-color: var(--color-bg-secondary); min-height: 80vh;">
+        <div class="container">
+
+            <!-- Flash Messages -->
+            <% if(typeof saleError !=='undefined' && saleError && saleError.length> 0) { %>
+                <div
+                    style="background: #fee2e2; color: #dc2626; padding: 1rem; border-radius: var(--border-radius-md); margin-bottom: 2rem; text-align: center;">
+                    <%= saleError[0] %>
+                </div>
+                <% } %>
+
+                    <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+
+                        <!-- Sidebar -->
+                        <aside>
+                            <%- include('./partials/SellerSidebar.ejs') %>
+                        </aside>
+
+                        <!-- Main Content -->
+                        <section
+                            style="background: white; padding: 2.5rem; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm);">
+                            <div
+                                style="margin-bottom: 2rem; border-bottom: 1px solid var(--color-border); padding-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                <h2 style="font-size: 1.5rem;">Sales & Promotions</h2>
+                                <button id="openSaleForm" class="btn btn-primary"
+                                    style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                                    <i class="ri-add-line"></i> Create New Sale
+                                </button>
+                            </div>
+
+                            <% if (!sales || sales.length===0) { %>
+                                <div style="text-align: center; padding: 3rem; color: var(--color-text-secondary);">
+                                    <i class="ri-price-tag-3-line"
+                                        style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                                    <p>No active sales. Create one to boost revenue!</p>
+                                </div>
+                                <% } else { %>
+                                    <div style="display: grid; gap: 1.5rem;">
+                                        <% sales.forEach(sale=> { %>
+                                            <div
+                                                style="border: 1px solid var(--color-border); border-radius: var(--border-radius-md); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                                                <div>
+                                                    <h3
+                                                        style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.2rem;">
+                                                        <%= sale.title %>
+                                                    </h3>
+                                                    <div
+                                                        style="font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">
+                                                        <%= new Date(sale.startDate).toLocaleDateString() %> — <%= new
+                                                                Date(sale.endDate).toLocaleDateString() %>
+                                                    </div>
+                                                    <div style="font-size: 0.85rem;">
+                                                        <span style="font-weight: 500;">
+                                                            <% if (sale.productIds && sale.productIds.length> 0) { %>
+                                                                <%= sale.productIds.length %> Products Included
+                                                                    <% } else { %>
+                                                                        All Products
+                                                                        <% } %>
+                                                        </span>
+                                                        <span
+                                                            style="margin-left: 10px; background: var(--color-accent-light); color: var(--color-accent-primary); padding: 2px 8px; border-radius: 4px;">
+                                                            <%= sale.percentage %>% OFF
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div style="display: flex; gap: 0.5rem;">
+                                                    <button class="btn btn-outline editSale"
+                                                        data-sale='<%= JSON.stringify(sale) %>'
+                                                        style="font-size: 0.85rem; padding: 0.4rem 1rem;">Edit</button>
+                                                    <button class="btn btn-primary deleteSale" data-id="<%= sale._id %>"
+                                                        style="background: #dc2626; border-color: #dc2626; font-size: 0.85rem; padding: 0.4rem 1rem;">Delete</button>
+                                                </div>
+                                            </div>
+                                            <% }) %>
+                                    </div>
+                                    <% } %>
+                        </section>
+
+                    </div>
+        </div>
+    </main>
+
+    <!-- Sale Modal -->
+    <div id="saleModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div
+            style="background: white; padding: 2rem; border-radius: var(--border-radius-md); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+            <h3 id="modalTitle"
+                style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem;">Add
+                Sale</h3>
+
+            <form id="saleForm" method="POST">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Sale Title</label>
+                    <input id="saleTitle" name="title" required
+                        style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Discount (%)</label>
+                        <input type="number" id="salePercentage" name="percentage" required
+                            style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px;">
+                    </div>
+                    <div>
+                        <!-- Spacer or Future Field -->
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Start Date</label>
+                        <input type="date" id="saleStart" name="startDate" required
+                            style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">End Date</label>
+                        <input type="date" id="saleEnd" name="endDate" required
+                            style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px;">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Select Products</label>
+                    <div
+                        style="border: 1px solid var(--color-border); border-radius: 4px; padding: 0.5rem; max-height: 150px; overflow-y: auto;">
+                        <label
+                            style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #f0f0f0;">
+                            <input type="checkbox" id="selectAllProducts">
+                            <span style="font-weight: 600;">Select All</span>
+                        </label>
+                        <% products.forEach((p)=> { %>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem;">
+                                <input type="checkbox" name="products" class="product-checkbox" value="<%= p._id %>">
+                                <span>
+                                    <%= p.title %>
+                                </span>
+                            </label>
+                            <% }) %>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                    <button type="button" id="closeModal" class="btn btn-outline">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Sale</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div
+            style="background: white; padding: 2rem; border-radius: var(--border-radius-md); width: 90%; max-width: 400px;">
+            <h3 style="margin-bottom: 1rem;">Delete Sale?</h3>
+            <p style="margin-bottom: 1.5rem; color: var(--color-text-secondary);">This action cannot be undone.</p>
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button id="cancelDelete" class="btn btn-outline">Cancel</button>
+                <button id="confirmDelete" class="btn btn-primary"
+                    style="background: #dc2626; border-color: #dc2626;">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <%- include('./partials/Footer.ejs') %>
+
+        <script>
+            // Sale Modal Logic
+            const saleModal = document.getElementById('saleModal');
+            const saleForm = document.getElementById('saleForm');
+            const modalTitle = document.getElementById('modalTitle');
+            const selectAll = document.getElementById('selectAllProducts');
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+
+            document.getElementById('openSaleForm').onclick = () => {
+                modalTitle.innerText = "Add New Sale";
+                saleForm.action = "/sales/create";
+                saleForm.reset();
+                saleModal.style.display = 'flex';
+            };
+
+            document.querySelectorAll('.editSale').forEach(btn => {
+                btn.onclick = () => {
+                    const sale = JSON.parse(btn.dataset.sale);
+                    modalTitle.innerText = "Edit Sale";
+                    saleForm.action = `/sales/update/${sale._id}`;
+                    document.getElementById("saleTitle").value = sale.title;
+                    document.getElementById("salePercentage").value = sale.percentage;
+                    document.getElementById("saleStart").value = sale.startDate.split("T")[0];
+                    document.getElementById("saleEnd").value = sale.endDate.split("T")[0];
+
+                    checkboxes.forEach(cb => cb.checked = false);
+                    sale.productIds.forEach(id => {
+                        const cb = document.querySelector(`.product-checkbox[value="${id}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                    saleModal.style.display = 'flex';
+                };
+            });
+
+            document.getElementById('closeModal').onclick = () => saleModal.style.display = 'none';
+
+            selectAll.addEventListener('change', () => {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
+
+            // Delete Modal Logic
+            const deleteModal = document.getElementById('deleteModal');
+            let deleteId = null;
+
+            document.querySelectorAll('.deleteSale').forEach(btn => {
+                btn.onclick = () => {
+                    deleteId = btn.dataset.id;
+                    deleteModal.style.display = 'flex';
+                };
+            });
+
+            document.getElementById('cancelDelete').onclick = () => deleteModal.style.display = 'none';
+
+            document.getElementById('confirmDelete').onclick = async () => {
+                if (deleteId) {
+                    await fetch(`/sales/${deleteId}`, { method: "DELETE" });
+                    window.location.reload();
+                }
+            };
+        </script>
+
+        <style>
+            @media(max-width: 768px) {
+                .container>div {
+                    grid-template-columns: 1fr !important;
+                }
+            }
+        </style>

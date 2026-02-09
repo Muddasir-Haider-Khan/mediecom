@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BunnyHop Shop - Your Baby's Choice</title>
+  <link rel="shortcut icon" href="/media/logo.png" type="image/x-icon">
+
+  <link rel="stylesheet" href="/stylesheets/design-system.css" />
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+  <link rel="stylesheet" href="/stylesheets/tw-output.css">
+  <link rel="stylesheet" href="/stylesheets/styles.css">
+
+</head>
+
+<body>
+<% const totalItems = Array.isArray(cart) ? cart.length : 0; %>
+
+
+    <header>
+      <div class="container">
+        <nav>
+          <!-- Mobile Menu Toggle -->
+          <button id="toggleOpen" class="btn btn-outline"
+            style="padding: 0.5rem; border: none; font-size: 1.5rem; display: none;">
+            <i class="ri-menu-line"></i>
+          </button>
+
+          <!-- Logo -->
+          <a aria-colspan="flex " href="/" class="logo">
+            Bunny <span class="text-accent">Hop</span>
+          </a>
+
+          <!-- Desktop Navigation -->
+          <div class="nav-links" style="display: flex; gap: 2rem;">
+            <a href="/">Home</a>
+            <a href="/fits/boys">Boys</a>
+            <a href="/fits/girls">Girls</a>
+            <a href="/clothings/rompers">Rompers</a>
+            <a href="/orders">Orders</a>
+          </div>
+
+          <!-- Icons & User -->
+          <div class="nav-icons">
+            <!-- Search -->
+            <div style="position: relative;">
+              <button id="searchButton" style="background:none; border:none; cursor:pointer;">
+                <i class="ri-search-line"></i>
+              </button>
+              <form action="/clothings/search" method="get"
+                style="display:none; position: absolute; right: 0; top: 100%; background: white; padding: 10px; box-shadow: var(--shadow-md);"
+                id="searchBar">
+                <input name="searched" type="text" placeholder="Search..."
+                  style="padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+              </form>
+            </div>
+
+            <!-- Cart -->
+            <a href="/cart" style="position: relative;">
+              <i class="ri-shopping-cart-line"></i>
+            <span 
+              id="cartQuantity"
+              class="quantity"
+              style="position: absolute; top: -8px; right: -8px; background: var(--color-accent-primary); 
+                    color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 50%;
+                    display: <%= totalItems > 0 ? 'inline-block' : 'none' %>;">
+              <%= totalItems %>
+            </span>
+            </a>
+
+            <!-- User Auth -->
+            <% if (!user || user==='unsigned' ) { %>
+              <a href="/access" class="btn btn-primary signin acc" style="padding: 0.5rem 1.5rem; font-size: 0.9rem;">Sign In</a>
+              <% } else { %>
+              <div class="relative flex ">
+                <!-- Username button -->
+                <button id="userDropdownBtn" class="text-sm font-medium px-2 py-1 rounded hover:bg-gray-100 focus:outline-none transition">
+                  <%= user.username %>
+                </button>
+
+                <!-- Seller Dashboard Icon -->
+                <% if(user.isSeller) { %>
+                  <a href="/seller/dashboard" title="Dashboard" class="text-lg ml-2 hover:text-gray-700 transition">
+                    <i class="ri-dashboard-line"></i>
+                  </a>
+                <% } %>
+
+                <!-- Logout dropdown -->
+                  <a href="/logout" class="block p-2 acc text-red-600 text-sm hover:bg-gray-100 rounded-md">Logout</a>
+              </div>
+            <% } %>
+          </div>
+        </nav>
+      </div>
+
+      <!-- Mobile Menu (Hidden by default) -->
+      <div id="collapseMenu" style="display: none; position: fixed; top: 0; left: 0; width: 100%; min-height: 100vh; background: white; z-index: 2000; padding: 2rem;">
+        <button id="toggleClose" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 2rem;">
+          <i class="ri-close-line"></i>
+        </button>
+        <div
+          style="display: flex; flex-direction: column; gap: 1.5rem; font-size: 1.2rem; align-items: center;">
+          <a href="/">Home</a>
+          <a href="/fits/boys">Boys</a>
+          <a href="/fits/girls">Girls</a>
+          <a href="/clothings/rompers">Rompers</a>
+          <a href="/clothings/shirts">Shirts</a>
+          <a href="/clothings/pents">Pents</a>
+          <a href="/clothings/hoodies">Hoodies</a>
+           <a href="/clothings/coats">Coats</a>
+          <a href="/clothings/shoes">Shoes</a>
+         
+          <a href="/orders">My Orders</a>
+          <% if (!user || user==='unsigned') { %>
+            <a href="/access" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem;">Sign In</a>
+          <% } else { %>
+              
+              <a href="/logout" class="block p-2 text-red-600 text-sm hover:bg-gray-100 rounded-md">Logout</a>
+          <% } %>
+        </div>
+      </div>
+    </header>
+
+    <style>
+      /* Responsive Tweaks inline for now */
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none !important;
+        } 
+
+        #toggleOpen {
+          display: block !important;
+        }
+      }
+      @media (max-width: 768px) {
+        .acc {
+          display: none !important;
+        }
+      }
+    </style>
+
+    <script src="/javascripts/index.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('userDropdownBtn');
+  const dropdown = document.getElementById('userDropdown');
+
+  btn?.addEventListener('click', (e) => {
+    e.stopPropagation(); // prevent closing immediately
+    dropdown.classList.toggle('hidden');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+});
+</script>

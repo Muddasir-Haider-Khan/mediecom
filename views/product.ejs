@@ -1,0 +1,180 @@
+<%- include('./partials/Header.ejs') %>
+
+  <main style="padding: var(--spacing-xl) 0; background-color: var(--color-bg-primary);">
+    <div class="container"
+      style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; max-width: 1200px;">
+
+      <!-- Image Gallery -->
+      <div class="product-gallery" style="display: grid; gap: 1rem;">
+        <!-- Main Image -->
+        <div
+          style="border-radius: var(--border-radius-lg); overflow: hidden; background: white; box-shadow: var(--shadow-sm);">
+          <img id="mainImage" src="<%= product.mainImage %>" alt="<%= product.title %>"
+            style="width: 100%; height: auto; object-fit: cover; max-height: 600px;">
+        </div>
+
+        <!-- Thumbnails -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+          <% [product.mainImage, product.image2, product.image3, product.image4, product.image5].forEach((img, index)=>
+            { %>
+            <% if(img) { %>
+              <div onclick="changeImage('<%= img %>')"
+                style="cursor: pointer; border-radius: var(--border-radius-md); overflow: hidden; height: 100px;">
+                <img src="<%= img %>" alt="Thumbnail" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <% } %>
+                <% }) %>
+        </div>
+      </div>
+
+      <!-- Product Info -->
+      <div class="product-details" style="position: sticky; top: 120px;">
+        <p
+          style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">
+          Bunny Hop</p>
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">
+          <%= product.title %>
+        </h1>
+
+        <!-- Price & Discount -->
+        <div style="margin-bottom: 2rem;">
+          <% if (typeof discountPercent !=='undefined' && discountPercent> 0) { %>
+            <div
+              style="display: inline-block; background: var(--color-accent-light); color: var(--color-accent-primary); padding: 0.5rem 1rem; border-radius: 4px; margin-bottom: 1rem;">
+              <strong>
+                <%= discountPercent %>% OFF
+              </strong> with <%= discountName %>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 1rem;">
+              <span style="font-size: 2rem; font-weight: 600; color: var(--color-accent-primary);">PKR <%=
+                  discountedPrice.toFixed(0) %></span>
+              <span style="font-size: 1.2rem; text-decoration: line-through; color: var(--color-text-secondary);">PKR
+                <%= product.price %>
+              </span>
+            </div>
+            <span style="font-size: 0.9rem; color: var(--color-text-secondary);">
+              Shipping 250.00
+            </span>
+            <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-top: 0.5rem;">Offer valid until <%=
+                new Date(discountEnd).toLocaleDateString() %>
+            </p>
+            <% } else { %>
+              <span style="font-size: 2rem; font-weight: 600;">PKR <%= product.price %></span>
+              <% } %>
+        </div>
+
+        <!-- Colors -->
+        <div style="margin-bottom: 2rem;">
+          <h3 style="font-size: 1rem; margin-bottom: 0.8rem;">Select Color</h3>
+          <div style="display: flex; gap: 10px;">
+            <% if (product.color && Array.isArray(product.color)) { %>
+              <% product.color.forEach(color=> { %>
+                <button onclick="selectColor(this)" class="color-dot"
+                  style="width: 32px; height: 32px; border-radius: 50%; background-color: <%= color %>; border: 2px solid #ddd; cursor: pointer; transition: transform 0.2s;"></button>
+                <% }) %>
+                  <% } %>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 2.5rem;" class="action">
+          <button onclick="window.location.href='/checkout/<%= product.id %>'" class="btn btn-primary"
+            style="flex: 2; font-size: 1.1rem;">
+            Buy Now
+          </button>
+          <button data-fitId="<%= product._id %>" class="btn btn-outline add-btn" style="flex: 1; font-size: 1.1rem;">
+            <i class="ri-shopping-cart-line"></i> Add to Cart
+          </button>
+        </div>
+
+        <!-- Description -->
+        <div style="border-top: 1px solid var(--color-border); padding-top: 2rem;">
+          <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">Description</h3>
+          <p style="color: var(--color-text-secondary); line-height: 1.8;">
+            <%= product.description %>
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('./partials/Footer.ejs') %>
+
+    <!-- Scripts -->
+    <script>
+      function changeImage(src) {
+        document.getElementById('mainImage').src = src;
+      }
+
+      function selectColor(btn) {
+        document.querySelectorAll('.color-dot').forEach(d => {
+          d.style.transform = 'scale(1)';
+          d.style.borderColor = '#ddd';
+        });
+        btn.style.transform = 'scale(1.2)';
+        btn.style.borderColor = 'var(--color-text-primary)';
+      }
+
+      // Add to Cart Logic
+      const addBtns = document.querySelectorAll('.add-btn');
+      const cartCount = document.querySelector(".quantity")
+addBtns.forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const id = btn.dataset.fitid;
+     try {
+      const res = await fetch(`/add-to-cart/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const data = await res.json();
+      const count = typeof data.cartCount === 'number'
+        ? data.cartCount
+        : (Array.isArray(data.cart) ? data.cart.length : 0);
+
+      cartCount.innerText = count;
+      cartCount.style.display = count > 0 ? "inline-block" : "none";
+
+      showToast("Added to Cart! 🐰");
+
+    } catch (err) {
+      console.error(err);
+    }
+  });
+});
+
+      function showToast(message) {
+        const toast = document.createElement('div');
+        toast.innerText = message;
+        toast.style.cssText = "position: fixed; top: 20px; right: 20px; background: #dcfce7; color: #166534; padding: 1rem 2rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 3000; animation: slideIn 0.3s ease-out;";
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.animation = "slideOut 0.3s ease-in forwards";
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+    </script>
+
+    <!-- Mobile Responsive Styles inline -->
+    <style>
+      @media (max-width: 768px) {
+        .container {
+          grid-template-columns: 1fr !important;
+          gap: 2rem !important;
+        }
+
+        .product-details {
+          position: static !important;
+        }
+
+        h1 {
+          font-size: 2rem !important;
+        }
+      }
+      @media (max-width: 768px) {
+        .action {
+          flex-direction: column;
+        }
+      }
+    </style>

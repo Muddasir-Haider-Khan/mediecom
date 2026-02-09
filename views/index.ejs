@@ -1,0 +1,368 @@
+<%- include('./partials/Header.ejs') %>
+
+  <style>
+    @media (max-width:620px) {
+      .hero-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2rem !important;
+      }
+      .img {
+        width: 300px !important;
+        height: 300px !important;
+      }
+      .float-div {
+        height: 300px !important;
+      }
+      @media (max-width: 425px) {
+        .newsletter-form {
+          flex-direction: column;
+        }
+      }
+    }
+    
+  </style>
+  <main>
+    <!-- Hero Section (Existing) -->
+    <div class="hero-section"
+      style="padding: 4rem 0; background: radial-gradient(circle at 10% 20%, rgb(255, 240, 245) 0%, rgb(255, 255, 255) 90%); overflow: hidden;">
+      <div class="container hero-container" style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+        <div class="reveal">
+          <span
+            style="background: var(--color-secondary-accent); color: var(--color-text-primary); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem; display: inline-block;">New
+            Season Arrivals</span>
+          <h1
+            style="font-size: 4rem; color: var(--color-accent-primary); margin-bottom: 1rem; line-height: 1.1; text-shadow: 2px 2px 0 #fff;">
+            Cutest Styles <br> <span style="color: var(--color-text-secondary);">For Little Smiles</span>
+          </h1>
+          <p style="font-size: 1.2rem; color: var(--color-text-secondary); margin-bottom: 2.5rem; max-width: 500px;">
+            Handpicked clothing designed for comfort, play, and picture-perfect moments.
+          </p>
+          <div style="display: flex; gap: 1rem;">
+            <a href="#shop" class="btn btn-primary" style="font-size: 1.2rem; padding: 1rem 3rem;">Shop Collection</a>
+          </div>
+        </div>
+        <div class="lg-hidden reveal" style="position: relative;">
+          <div class="animate-float float-div"
+            style="width: 100%; height: 500px; background-color: #ffe4e1; margin-left:auto; border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 8px solid white; box-shadow: var(--shadow-lg);">
+            <% if(typeof essentials !=='undefined' && essentials && essentials.heroImage) { %>
+                            <img src="<%= essentials.heroImage %>" alt="Happy Baby" class="img" style="width: 100%; height: 100%; object-fit: cover;"
+              onerror="this.src='https://images.unsplash.com/photo-1519689680058-324335c77eba?q=80&w=800&auto=format&fit=crop'">
+              
+                        <% } else{ %>
+                          <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?q=80&w=800&auto=format&fit=crop" class="img" alt="Happy Baby alt" style="width: 100%; height: 100%; object-fit: cover;" >
+
+                      <%  } %>
+          </div>
+          <div class="animate-float"
+            style="position: absolute; top: 10%; right: 0%; width: 80px; height: 80px; background: var(--color-secondary-accent); border-radius: 50%; z-index: -1; animation-delay: 1s;">
+          </div>
+          <div class="animate-float"
+            style="position: absolute; bottom: 10%; left: 0%; width: 60px; height: 60px; background: var(--color-accent-primary); border-radius: 50%; z-index: -1; animation-delay: 0.5s;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. Features Bar -->
+    <section class="container reveal" style="margin-top: -3rem; position: relative; z-index: 10;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+        <div class="feature-box">
+          <i class="ri-truck-line feature-icon"></i>
+          <h3>Free Shipping</h3>
+          <p style="font-size: 0.9rem; color: var(--color-text-secondary);">On orders over PKR 3000</p>
+        </div>
+        <div class="feature-box">
+          <i class="ri-shield-check-line feature-icon"></i>
+          <h3>Safe Payment</h3>
+          <p style="font-size: 0.9rem; color: var(--color-text-secondary);">100% Secure Checkout</p>
+        </div>
+        <div class="feature-box" onclick="window.location.href='https://wa.me/923138190150';"  style="cursor:pointer;">
+          <i class="ri-customer-service-2-line feature-icon"></i>
+          <h3>24/7 Support</h3>
+          <p style="font-size: 0.9rem; color: var(--color-text-secondary);">Always here for you</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Shop Categories -->
+    <section class="container reveal" style="padding: 4rem 1rem;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 style="font-size: 2.5rem; color: var(--color-accent-primary);">Shop by <span
+            style="color: var(--color-text-secondary);">Category</span></h2>
+      </div>
+      <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+        <% if(typeof categories !=='undefined' && categories.length> 0) { %>
+          <% for(let i=0; i < categories.length; i++) { %>
+            <a href="/clothings/<%= categories[i].name %>" class="category-item">
+              <div class="category-circle">
+                <img src="<%= categories[i].image %>" alt="<%= categories[i].name %>"
+                  style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <h4 style="color: var(--color-text-primary);">
+                <%= categories[i].name %>
+              </h4>
+            </a>
+            <% } %>
+              <% } else { %>
+                <!-- Fallback if no categories are set -->
+                <a href="/clothings/rompers" class="category-item">
+                  <div class="category-circle"><img
+                      src="https://images.unsplash.com/photo-1522771753062-58836281a93e?q=80&w=300" alt="Rompers"></div>
+                  <h4 style="color: var(--color-text-primary);">Rompers</h4>
+                </a>
+                <!-- Add other static ones solely as fallback -->
+                <% } %>
+      </div>
+    </section>
+
+    <!-- 3. Featured Grid (Existing) -->
+    <section id="shop" class="container" style="padding: 2rem 1rem;">
+      <div class="reveal" style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 3rem; color: var(--color-accent-primary);">Featured <span
+            style="color: var(--color-text-primary);">Favorites</span></h2>
+        <p style="color: var(--color-text-secondary); font-size: 1.2rem;">Adored by moms, loved by babies.</p>
+      </div>
+      <div class="reveal-stagger"
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+        <% if(feat.length> 0) { %>
+          <% feat.forEach(function(product){ %>
+            <div class="product-card" onclick="window.location.href='/products/<%= product._id %>'"
+              style="cursor: pointer; background: white; border-radius: var(--border-radius-lg); overflow: hidden; position: relative;">
+              <div style="width: 100%; height: 350px; overflow: hidden; background: #fff;">
+                <img src="<%= product.mainImage %>" alt="<%= product.title %>"
+                  style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <% if(product.discountPercent> 0) { %>
+                <div
+                  style="position: absolute; top: 1rem; left: 1rem; background: var(--color-secondary-accent); color: var(--color-text-primary); padding: 0.4rem 1rem; border-radius: 20px; font-weight: 700; font-size: 0.9rem; font-family: var(--font-heading); box-shadow: var(--shadow-sm);">
+                  <%= product.discountPercent %>% OFF
+                </div>
+                <% } %>
+                  <div style="padding: 1.2rem;">
+                    <div style="display: flex; gap: 2rem; margin-bottom: 0.5rem;">
+                      <h3 style="font-size: 1.3rem; margin: 0; line-height: 1.2;">
+                        <%= product.title %>
+                      </h3>
+                      <div>
+                        <% if (product.discountPercent > 0) { %>
+                        <div style="display:flex; flex-direction: column;">
+                          <h3 style="font-weight: 700; color: var(--color-accent-primary); font-size: 1.2rem; white-space: nowrap;">
+                            <span style="font-size: 1rem;">PKR</span> <%= (product.price - (product.price * product.discountPercent / 100)).toFixed(0) %>
+                          </h3>
+                          <span style="font-size:0.9rem; text-decoration:line-through;">
+                            PKR <%= product.price %>
+                          </span>
+                        </div>
+                      <% } else { %>
+                        <span style="font-size:2rem; font-weight:600;">
+                          PKR <%= product.price %>
+                        </span>
+                      <% } %>
+                      </div>
+
+
+
+                      <!-- <span
+                        style="font-weight: 700; color: var(--color-accent-primary); font-size: 1.1rem; white-space: nowrap;">PKR
+                        <%= product.price %>
+                      </span> -->
+                    </div>
+                    <p
+                      style="font-size: 1rem; color: var(--color-text-secondary); margin-bottom: 1.5rem; text-transform: capitalize;">
+                      <%= (product.category && product.category.length> 0) ? product.category[0] : 'General' %>
+                    </p>
+                    <button class="btn btn-outline" style="width: 100%;">View Details</button>
+                  </div>
+            </div>
+            <% }) %>
+              <% } else { %>
+                <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                  <p style="font-size: 1.2rem; color: var(--color-text-secondary);">No featured products found yet.</p>
+                </div>
+                <% } %>
+      </div>
+    </section>
+
+    <!-- 4. Promo Banner -->
+    <!-- <section class="container reveal" style="padding: 4rem 1rem;">
+      <div class="promo-banner">
+        <h2 style="font-size: 3rem; margin-bottom: 1rem;">End of Season Clearance!</h2>
+        <p style="font-size: 1.4rem; margin-bottom: 2rem;">Up to 25% Off on selected winter wear.</p>
+        <a href="/clothings/coats" class="btn" style="background: white; color: var(--color-accent-primary);">Shop
+          Sale</a>
+        
+        <div class="animate-float"
+          style="position: absolute; top: -20px; left: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 50%;">
+        </div>
+        <div class="animate-float"
+          style="position: absolute; bottom: -20px; right: -20px; width: 150px; height: 150px; background: rgba(255,255,255,0.2); border-radius: 50%; animation-delay: 1s;">
+        </div>
+      </div>
+    </section> -->
+
+    <!-- 5. Trendy Styles (Existing) -->
+    <section class="container" style="padding: 2rem 1rem;">
+      <div class="reveal" style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 3rem; color: var(--color-accent-primary);">New & <span
+            style="color: var(--color-text-primary);">Trendy</span></h2>
+      </div>
+      <div class="reveal-stagger"
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+        <% if(trendy.length> 0) { %>
+          <% trendy.forEach(function(product){ %>
+            <div class="product-card" onclick="window.location.href='/products/<%= product._id %>'"
+              style="cursor: pointer; background: white; border-radius: var(--border-radius-lg); padding: 1rem;">
+              <div
+                style="width: 100%; height: 300px; border-radius: var(--border-radius-md); overflow: hidden; margin-bottom: 1rem;">
+                <img src="<%= product.mainImage %>" alt="<%= product.title %>"
+                  style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">
+                <%= product.title %>
+              </h3>
+
+              <div style="display: flex; gap: 5px; margin-bottom: 1rem;">
+                <% if (product.color && Array.isArray(product.color)) { %>
+                  <% for(let i=0; i < product.color.length; i++) { %>
+                    <span
+                      style="--dot-color: <%= product.color[i] %>; width: 15px; height: 15px; border-radius: 50%; background-color: var(--dot-color); display: inline-block; border: 1px solid #ddd;"></span>
+                    <% } %>
+                      <% } %>
+              </div>
+              <button class="btn btn-primary" style="width: 100%;">Shop Now</button>
+            </div>
+            <% }) %>
+              <% } else { %>
+                <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                  <p style="font-size: 1.1rem;">No trendy products found.</p>
+                </div>
+                <% } %>
+      </div>
+    </section>
+
+    <!-- 6. Testimonials -->
+    <!-- <section class="container reveal" style="padding: 4rem 1rem; background: var(--color-bg-primary);">
+      <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2.5rem; color: var(--color-accent-primary);">Happy <span
+            style="color: var(--color-text-text-primary);">Parents</span></h2>
+      </div>
+      <div class="reveal-stagger"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div class="testimonial-card">
+          <div style="color: #FFD700; font-size: 1.2rem; margin-bottom: 1rem;">★★★★★</div>
+          <p style="color: var(--color-text-secondary); font-style: italic;">"Absolutely love the quality! My daughter
+            refuses to take off her bunny hoodie. Highly recommend!"</p>
+          <div class="testimonial-user">
+            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100" class="user-avatar"
+              alt="User">
+            <div>
+              <h4 style="margin: 0;">Sarah M.</h4>
+              <span style="font-size: 0.8rem; color: var(--color-text-secondary);">Verified Buyer</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div style="color: #FFD700; font-size: 1.2rem; margin-bottom: 1rem;">★★★★★</div>
+          <p style="color: var(--color-text-secondary); font-style: italic;">"Fast delivery and the packaging was so
+            cute. The rompers fit perfectly. Will order again!"</p>
+          <div class="testimonial-user">
+            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100" class="user-avatar"
+              alt="User">
+            <div>
+              <h4 style="margin: 0;">Jessica K.</h4>
+              <span style="font-size: 0.8rem; color: var(--color-text-secondary);">Verified Buyer</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div style="color: #FFD700; font-size: 1.2rem; margin-bottom: 1rem;">★★★★★</div>
+          <p style="color: var(--color-text-secondary); font-style: italic;">"Best fabrics for sensitive skin. So glad I
+            found this shop. The designs are unique and adorable."</p>
+          <div class="testimonial-user">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" class="user-avatar"
+              alt="User">
+            <div>
+              <h4 style="margin: 0;">David R.</h4>
+              <span style="font-size: 0.8rem; color: var(--color-text-secondary);">Verified Buyer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section> -->
+
+    <!-- 6. Testimonials -->
+    <section class="container reveal" style="padding: 4rem 1rem; background: var(--color-bg-primary);">
+      <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2.5rem; color: var(--color-accent-primary);">Happy <span
+            style="color: var(--color-text-text-primary);">Parents</span></h2>
+      </div>
+      <div class="reveal-stagger"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+
+        <% if (testimonials && testimonials.length > 0) { %>
+          <% testimonials.forEach(t => { %>
+            <div class="testimonial-card">
+              <div style="color: #FFD700; font-size: 1.2rem; margin-bottom: 1rem;">★★★★★</div>
+              <p style="color: var(--color-text-secondary); font-style: italic;">"<%= t.message %>"</p>
+              <div class="testimonial-user">
+                <div>
+                  <h4 style="margin: 0;"><%= t.username %></h4>
+                  <% if (t.instagramLink) { %>
+                    <span style="font-size: 0.8rem; color: var(--color-text-secondary);"><a href="<%= t.instagramLink %>" target="_blank">From Instagram</a></span>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p>No testimonials yet.</p>
+        <% } %>
+
+      </div>
+    </section>
+
+
+    <!-- 7. Instagram Gallery -->
+    <section class="container reveal" style="padding: 4rem 1rem;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 style="font-size: 2.5rem;">Moments of <span style="color: var(--color-accent-primary);">Joy</span></h2>
+        <p>Follow us @BunnyHopShop</p>
+      </div>
+      <div class="gallery-grid">
+        <div class="gallery-item"><img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?q=80&w=400">
+        </div>
+        <div class="gallery-item"><img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=400">
+        </div>
+        <div class="gallery-item"><img src="https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?q=80&w=400">
+        </div>
+        <div class="gallery-item"><img src="https://images.unsplash.com/photo-1723652909674-a5cdd2d28a8e?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Newsletter -->
+    <section class="container reveal" style="padding: 4rem 1rem;">
+      <div class="newsletter-box">
+        <div class="animate-float"
+          style="position: absolute; top: -40px; left: -40px; width: 150px; height: 150px; background: rgba(255,255,255,0.3); border-radius: 50%;">
+        </div>
+        <h2 style="font-size: 2.5rem; color: var(--color-text-primary);">Join the Bunny Club</h2>
+        <p style="margin-top: 1rem; color: var(--color-text-primary);">Get exclusive offers, cute updates, and 10% off
+          your first order!</p>
+        <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
+          <input type="email" placeholder="Your Email Address" class="newsletter-input" required>
+          <button type="submit" class="btn btn-primary" style="border-radius: 50px;">Subscribe</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <% if(error && error.length> 0) { %>
+    <div
+      style="position: fixed; top: 20px; right: 20px; background: #fee2e2; color: #dc2626; padding: 1rem 2rem; border-radius: 8px; box-shadow: var(--shadow-md); z-index: 3000;">
+      <%= error[0] %>
+    </div>
+    <% } %>
+
+      <%- include('./partials/Footer.ejs') %>

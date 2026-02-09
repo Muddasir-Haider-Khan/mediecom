@@ -1,0 +1,47 @@
+<%- include('./partials/Header.ejs') %>
+
+  <main style="padding: var(--spacing-xl) 0; min-height: 80vh; background-color: var(--color-bg-primary);">
+    <div class="container" style="max-width: 800px;">
+
+      <div
+        style="background: white; padding: 3rem; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-md);">
+        <h1
+          style="font-size: 2.5rem; font-family: var(--font-heading); margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border);">
+          Shipping & Delivery</h1>
+
+        <div class="prose" style="font-size: 1.1rem; line-height: 1.8; color: var(--color-text-secondary);">
+          <div style="margin-bottom: 2rem;">
+            <h3
+              style="color: var(--color-text-primary); font-size: 1.3rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+              <i class="ri-truck-line"></i> Shipping Policy
+            </h3>
+            <p>
+              We offer reliable shipping across Pakistan. Orders are typically processed within 1-2 business days.
+              Standard delivery times range from 3-5 business days depending on your location.
+            </p>
+          </div>
+
+          <div style="margin-bottom: 2rem;">
+            <h3
+              style="color: var(--color-text-primary); font-size: 1.3rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+              <i class="ri-money-dollar-circle-line"></i> Shipping Rates
+            </h3>
+            <p>
+              We offer a flat shipping rate of <strong>PKR 250</strong> for all orders nationwide. Free shipping may be
+              available during special promotional periods.
+            </p>
+          </div>
+
+          <div
+            style="background: #fdf2f8; border-left: 4px solid #db2777; padding: 1.5rem; border-radius: 0 4px 4px 0;">
+            <p style="color: #be185d; font-size: 0.95rem;">
+              <strong>Note:</strong> Delivery times may be affected during public holidays and peak sale seasons.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <%- include('./partials/Footer.ejs') %>
