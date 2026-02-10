@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5f3ff"/>
+      <stop offset="100%" style="stop-color:#ede9fe"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg)"/>
+  <g transform="translate(300,260)">
+    <rect x="-100" y="-120" width="200" height="140" rx="12" fill="white" stroke="#7c3aed" stroke-width="3"/>
+    <rect x="-85" y="-105" width="170" height="100" rx="6" fill="#1e1b4b"/>
+    <path d="M-70,-75 Q-40,-55 -10,-75 Q20,-55 50,-75 Q70,-60 70,-45" fill="none" stroke="#22c55e" stroke-width="2"/>
+    <path d="M-70,-40 Q-40,-20 -10,-40 Q20,-20 50,-40" fill="none" stroke="#facc15" stroke-width="2"/>
+    <text x="-70" y="-55" font-family="monospace" font-size="14" fill="#22c55e">72 BPM</text>
+    <text x="30" y="-55" font-family="monospace" font-size="14" fill="#3b82f6">98%</text>
+    <text x="-70" y="-15" font-family="monospace" font-size="12" fill="#facc15">120/80</text>
+    <rect x="-100" y="25" width="200" height="25" rx="0 0 12 12" fill="#7c3aed" opacity="0.1"/>
+    <circle cx="-70" cy="38" r="5" fill="#22c55e"/>
+    <circle cx="-50" cy="38" r="5" fill="#7c3aed" opacity="0.3"/>
+    <rect x="50" y="32" width="30" height="10" rx="3" fill="#7c3aed" opacity="0.2"/>
+  </g>
+  <text x="300" y="470" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#7c3aed">ICU Patient Monitor</text>
+  <text x="300" y="505" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="#6b7280">7 Parameter Display</text>
+</svg>

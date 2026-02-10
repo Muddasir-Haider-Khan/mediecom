@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0fdf4"/>
+      <stop offset="100%" style="stop-color:#dcfce7"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg)"/>
+  <g transform="translate(300,260)" fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round">
+    <ellipse cx="0" cy="0" rx="40" ry="12" fill="#0f766e" opacity="0.1"/>
+    <path d="M-5,-10 L-5,-120 Q-5,-140 -25,-155 Q-55,-175 -70,-140 Q-80,-115 -50,-100 L-5,-75" stroke-width="4"/>
+    <path d="M5,-10 L5,-120 Q5,-140 25,-155 Q55,-175 70,-140 Q80,-115 50,-100 L5,-75" stroke-width="4"/>
+    <circle cx="-60" cy="-140" r="4" fill="#0f766e"/>
+    <circle cx="60" cy="-140" r="4" fill="#0f766e"/>
+  </g>
+  <text x="300" y="480" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#0f766e">Surgical Scissors</text>
+  <text x="300" y="515" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="#6b7280">Precision Micro-Tip</text>
+</svg>
