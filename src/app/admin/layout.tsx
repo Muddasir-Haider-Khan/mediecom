@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import {
     LayoutDashboard,
     Package,
@@ -37,8 +38,25 @@ export default function AdminLayout({
 }: {
     children: React.ReactNode;
 }) {
+    const { data: session, status } = useSession();
+    const router = useRouter(); // Import this
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const pathname = usePathname();
+
+    useEffect(() => {
+        if (status === "loading") return;
+        if (!session || session.user.role !== "ADMIN") {
+            router.push("/");
+        }
+    }, [session, status, router]);
+
+    if (status === "loading" || !session || session.user.role !== "ADMIN") {
+        return null; // Or a loading spinner
+    }
+
+    const userInitials = session?.user?.name
+        ? session.user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
+        : "A";
 
     return (
         <div className="min-h-screen bg-surface-50 flex">
@@ -106,13 +124,20 @@ export default function AdminLayout({
                 <div className="p-4 border-t border-surface-800">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-primary-700 flex items-center justify-center text-xs font-bold text-white">
-                            A
+                            {userInitials}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-white truncate">Admin User</p>
-                            <p className="text-[10px] text-surface-500 truncate">admin@medsurgx.com</p>
+                            <p className="text-xs font-semibold text-white truncate">
+                                {session?.user?.name || "Admin User"}
+                            </p>
+                            <p className="text-[10px] text-surface-500 truncate">
+                                {session?.user?.email || "admin@medsurgx.com"}
+                            </p>
                         </div>
-                        <button className="text-surface-500 hover:text-white transition">
+                        <button
+                            onClick={() => signOut({ callbackUrl: "/login" })}
+                            className="text-surface-500 hover:text-white transition"
+                        >
                             <LogOut className="w-4 h-4" />
                         </button>
                     </div>

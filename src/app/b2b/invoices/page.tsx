@@ -1,15 +1,8 @@
 "use client";
 
-import { formatCurrency } from "@/lib/utils";
-import { FileText, Download, Eye } from "lucide-react";
-
-const invoices = [
-    { id: "INV-2026-001", orderId: "MSX-B2B-001", amount: 1285000, status: "PAID", date: "Feb 9, 2026", due: "Mar 9, 2026" },
-    { id: "INV-2026-002", orderId: "MSX-B2B-002", amount: 92000, status: "PAID", date: "Feb 7, 2026", due: "Mar 7, 2026" },
-    { id: "INV-2026-003", orderId: "MSX-B2B-003", amount: 3450000, status: "PENDING", date: "Feb 10, 2026", due: "Mar 10, 2026" },
-    { id: "INV-2026-004", orderId: "MSX-B2B-004", amount: 45000, status: "PAID", date: "Feb 3, 2026", due: "Mar 3, 2026" },
-    { id: "INV-2026-005", orderId: "MSX-B2B-005", amount: 780000, status: "OVERDUE", date: "Jan 28, 2026", due: "Feb 28, 2026" },
-];
+import { useEffect, useState } from "react";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { FileText, Download, Eye, Loader2 } from "lucide-react";
 
 const statusColors: Record<string, string> = {
     PAID: "badge-success",
@@ -18,6 +11,47 @@ const statusColors: Record<string, string> = {
 };
 
 export default function B2BInvoicesPage() {
+    const [invoices, setInvoices] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchInvoices() {
+            try {
+                // In a real app, we would fetch from /api/invoices
+                // For now, we simulate invoices based on orders
+                const res = await fetch("/api/orders?limit=50");
+                if (res.ok) {
+                    const data = await res.json();
+
+                    // Transform orders to invoices
+                    const transformed = data.orders.map((order: any) => ({
+                        id: `INV-${order.orderNumber}`,
+                        orderId: order.orderNumber,
+                        amount: order.totalAmount,
+                        // Simulate payment status based on order status
+                        status: order.status === "DELIVERED" ? "PAID" : "PENDING",
+                        date: order.createdAt,
+                        due: new Date(new Date(order.createdAt).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days due
+                    }));
+                    setInvoices(transformed);
+                }
+            } catch (error) {
+                console.error("Failed to fetch invoices", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchInvoices();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex h-96 items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div>
@@ -36,22 +70,30 @@ export default function B2BInvoicesPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-surface-100">
-                            {invoices.map((inv) => (
-                                <tr key={inv.id} className="hover:bg-surface-50 transition">
-                                    <td className="px-6 py-4 text-xs font-semibold text-surface-900">{inv.id}</td>
-                                    <td className="px-6 py-4 text-xs text-primary-700 font-medium">{inv.orderId}</td>
-                                    <td className="px-6 py-4 text-xs font-bold text-surface-900">{formatCurrency(inv.amount)}</td>
-                                    <td className="px-6 py-4"><span className={statusColors[inv.status]}>{inv.status}</span></td>
-                                    <td className="px-6 py-4 text-xs text-surface-500">{inv.date}</td>
-                                    <td className="px-6 py-4 text-xs text-surface-500">{inv.due}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex gap-1">
-                                            <button className="p-1.5 rounded-lg hover:bg-surface-100 text-surface-400 transition"><Eye className="w-3.5 h-3.5" /></button>
-                                            <button className="p-1.5 rounded-lg hover:bg-surface-100 text-surface-400 transition"><Download className="w-3.5 h-3.5" /></button>
-                                        </div>
+                            {invoices.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-8 text-center text-sm text-surface-500">
+                                        No invoices found.
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                invoices.map((inv) => (
+                                    <tr key={inv.id} className="hover:bg-surface-50 transition">
+                                        <td className="px-6 py-4 text-xs font-semibold text-surface-900">{inv.id}</td>
+                                        <td className="px-6 py-4 text-xs text-primary-700 font-medium">{inv.orderId}</td>
+                                        <td className="px-6 py-4 text-xs font-bold text-surface-900">{formatCurrency(inv.amount)}</td>
+                                        <td className="px-6 py-4"><span className={statusColors[inv.status] || "badge"}>{inv.status}</span></td>
+                                        <td className="px-6 py-4 text-xs text-surface-500">{formatDate(inv.date)}</td>
+                                        <td className="px-6 py-4 text-xs text-surface-500">{formatDate(inv.due)}</td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex gap-1">
+                                                <button className="p-1.5 rounded-lg hover:bg-surface-100 text-surface-400 transition"><Eye className="w-3.5 h-3.5" /></button>
+                                                <button className="p-1.5 rounded-lg hover:bg-surface-100 text-surface-400 transition" disabled><Download className="w-3.5 h-3.5" /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

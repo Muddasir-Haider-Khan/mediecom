@@ -65,3 +65,10 @@ export function getRelativeTime(date: Date): string {
     if (minutes > 0) return `${minutes}m ago`;
     return "just now";
 }
+export function formatDate(date: string | Date): string {
+    return new Date(date).toLocaleDateString("en-PK", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
+}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
     Search,
     ShoppingCart,
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { categories } from "@/lib/mock-data";
 
 export default function Header() {
+    const router = useRouter();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -29,6 +31,13 @@ export default function Header() {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter" && searchQuery.trim()) {
+            router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+            setIsSearchOpen(false);
+        }
+    };
 
     return (
         <>
@@ -74,16 +83,10 @@ export default function Header() {
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={handleSearch}
                                     placeholder="Search surgical instruments, diagnostic equipment..."
                                     className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-50 border border-surface-200 text-sm text-surface-900 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-200"
                                 />
-                                {searchQuery && (
-                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-lg border border-surface-100 p-4 z-50">
-                                        <p className="text-sm text-surface-500">
-                                            Search results for &quot;{searchQuery}&quot;...
-                                        </p>
-                                    </div>
-                                )}
                             </div>
                         </div>
 
@@ -176,6 +179,9 @@ export default function Header() {
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
                             <input
                                 type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={handleSearch}
                                 placeholder="Search products..."
                                 className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-50 border border-surface-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                                 autoFocus

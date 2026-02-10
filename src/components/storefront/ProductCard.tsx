@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import NextImage from "next/image";
 import { ShoppingCart, Star } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
@@ -56,9 +57,19 @@ export default function ProductCard({
             <div className="card-hover overflow-hidden">
                 {/* Image */}
                 <div className="relative aspect-square bg-gradient-to-br from-surface-50 to-surface-100 overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-20 group-hover:scale-110 transition-transform duration-500">
-                        🏥
-                    </div>
+                    {image ? (
+                        <NextImage
+                            src={image}
+                            alt={name}
+                            fill
+                            className="object-cover object-center group-hover:scale-110 transition-transform duration-500"
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        />
+                    ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-20 group-hover:scale-110 transition-transform duration-500">
+                            🏥
+                        </div>
+                    )}
 
                     {/* Badges */}
                     <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
@@ -103,8 +114,8 @@ export default function ProductCard({
                             <Star
                                 key={i}
                                 className={`w-3 h-3 ${i < 4
-                                        ? "fill-accent-400 text-accent-400"
-                                        : "fill-surface-200 text-surface-200"
+                                    ? "fill-accent-400 text-accent-400"
+                                    : "fill-surface-200 text-surface-200"
                                     }`}
                             />
                         ))}

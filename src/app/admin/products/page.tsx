@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
     Plus,
@@ -15,25 +15,54 @@ import { formatCurrency } from "@/lib/utils";
 import { products, categories } from "@/lib/mock-data";
 
 export default function AdminProductsPage() {
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("all");
+    const [products, setProducts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
 
-    const filteredProducts = products.filter((p) => {
-        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = selectedCategory === "all" || p.categoryId === selectedCategory;
-        return matchesSearch && matchesCategory;
-    });
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    async function fetchProducts() {
+        try {
+            const res = await fetch("/api/products?limit=100");
+            if (res.ok) {
+                const data = await res.json();
+                setProducts(data.products);
+            }
+        } catch (error) {
+            console.error("Failed to fetch products", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this product?")) return;
+
+        try {
+            const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
+            if (res.ok) {
+                setProducts(products.filter(p => p.id !== id));
+            }
+        } catch (error) {
+            console.error("Failed to delete product", error);
+        }
+    };
+
+    const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center justify-between">
                 <div>
                     <h1 className="font-display font-bold text-2xl text-surface-900">
                         Products
                     </h1>
                     <p className="text-sm text-surface-500 mt-1">
-                        Manage your product catalog ({products.length} products)
+                        Manage your product catalog
                     </p>
                 </div>
                 <Link href="/admin/products/new" className="btn-primary">
@@ -43,34 +72,25 @@ export default function AdminProductsPage() {
             </div>
 
             {/* Filters */}
-            <div className="card p-4">
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search products..."
-                            className="input-field pl-10 py-2.5"
-                        />
-                    </div>
-                    <select
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="input-field py-2.5 w-full sm:w-48"
-                    >
-                        <option value="all">All Categories</option>
-                        {categories.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                                {cat.name}
-                            </option>
-                        ))}
-                    </select>
+            <div className="card p-4 flex flex-wrap items-center gap-4">
+                <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
+                    <input
+                        type="text"
+                        placeholder="Search products..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2 rounded-lg bg-surface-50 border border-surface-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                    />
+                </div>
+                <div className="flex items-center gap-2">
+                    <button className="p-2 rounded-lg bg-surface-100 text-surface-600 hover:bg-surface-200">
+                        <MoreVertical className="w-5 h-5" />
+                    </button>
                 </div>
             </div>
 
-            {/* Table */}
+            {/* Products Table */}
             <div className="card overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full">
@@ -83,10 +103,7 @@ export default function AdminProductsPage() {
                                     Category
                                 </th>
                                 <th className="text-left text-[10px] font-semibold text-surface-500 uppercase tracking-wider px-6 py-3">
-                                    B2C Price
-                                </th>
-                                <th className="text-left text-[10px] font-semibold text-surface-500 uppercase tracking-wider px-6 py-3">
-                                    B2B Price
+                                    Price
                                 </th>
                                 <th className="text-left text-[10px] font-semibold text-surface-500 uppercase tracking-wider px-6 py-3">
                                     Stock
@@ -100,64 +117,69 @@ export default function AdminProductsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-surface-100">
-                            {filteredProducts.map((product) => (
-                                <tr key={product.id} className="hover:bg-surface-50 transition">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-surface-100 flex items-center justify-center text-lg">
-                                                🏥
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-semibold text-surface-900 line-clamp-1">
-                                                    {product.name}
-                                                </p>
-                                                <p className="text-[10px] text-surface-500">
-                                                    SKU: {product.slug.slice(0, 15)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="badge-primary text-[10px]">
-                                            {product.category.name}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-xs font-semibold text-surface-900">
-                                        {formatCurrency(product.b2cPrice)}
-                                    </td>
-                                    <td className="px-6 py-4 text-xs font-semibold text-primary-700">
-                                        {formatCurrency(product.b2bPrice)}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span
-                                            className={`text-xs font-semibold ${product.stock > 50
-                                                    ? "text-emerald-600"
-                                                    : product.stock > 10
-                                                        ? "text-amber-600"
-                                                        : "text-red-600"
-                                                }`}
-                                        >
-                                            {product.stock}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="badge-success text-[10px]">Published</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center justify-end gap-1">
-                                            <button className="p-1.5 rounded-lg hover:bg-surface-100 text-surface-500 transition">
-                                                <Eye className="w-3.5 h-3.5" />
-                                            </button>
-                                            <button className="p-1.5 rounded-lg hover:bg-surface-100 text-surface-500 transition">
-                                                <Edit className="w-3.5 h-3.5" />
-                                            </button>
-                                            <button className="p-1.5 rounded-lg hover:bg-red-50 text-surface-500 hover:text-red-600 transition">
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-surface-500">
+                                        Loading products...
                                     </td>
                                 </tr>
-                            ))}
+                            ) : filteredProducts.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-surface-500">
+                                        No products found
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredProducts.map((product) => (
+                                    <tr key={product.id} className="hover:bg-surface-50 transition">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-lg bg-surface-100 flex-shrink-0" />
+                                                <div>
+                                                    <p className="text-sm font-semibold text-surface-900">
+                                                        {product.name}
+                                                    </p>
+                                                    <p className="text-xs text-surface-500">
+                                                        SKU: {product.slug.slice(0, 8)}...
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-xs text-surface-600">
+                                            {product.category?.name}
+                                        </td>
+                                        <td className="px-6 py-4 text-xs font-medium text-surface-900">
+                                            {formatCurrency(product.b2cPrice)}
+                                        </td>
+                                        <td className="px-6 py-4 text-xs text-surface-600">
+                                            {product.stock} units
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {product.stock > 0 ? (
+                                                <span className="badge-success">In Stock</span>
+                                            ) : (
+                                                <span className="badge-danger">Out of Stock</span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button className="p-1.5 rounded-lg text-surface-400 hover:text-surface-900 hover:bg-surface-100">
+                                                    <Eye className="w-4 h-4" />
+                                                </button>
+                                                <button className="p-1.5 rounded-lg text-surface-400 hover:text-blue-600 hover:bg-blue-50">
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(product.id)}
+                                                    className="p-1.5 rounded-lg text-surface-400 hover:text-red-600 hover:bg-red-50"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

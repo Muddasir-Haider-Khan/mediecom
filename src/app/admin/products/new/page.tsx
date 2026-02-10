@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Upload, Plus, X } from "lucide-react";
-import { categories } from "@/lib/mock-data";
 
 export default function NewProductPage() {
+    const router = useRouter();
     const [images, setImages] = useState<string[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
+    const [supplyChains, setSupplyChains] = useState<any[]>([]);
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -20,6 +23,27 @@ export default function NewProductPage() {
         flashDeal: false,
     });
 
+    useEffect(() => {
+        async function fetchOptions() {
+            try {
+                const [catRes, scRes] = await Promise.all([
+                    fetch("/api/categories"),
+                    fetch("/api/supply-chains")
+                ]);
+
+                if (catRes.ok && scRes.ok) {
+                    const catData = await catRes.json();
+                    const scData = await scRes.json();
+                    setCategories(catData);
+                    setSupplyChains(scData);
+                }
+            } catch (error) {
+                console.error("Failed to fetch options", error);
+            }
+        }
+        fetchOptions();
+    }, []);
+
     const handleChange = (
         e: React.ChangeEvent<
             HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -31,6 +55,28 @@ export default function NewProductPage() {
             [name]:
                 type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
         }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const res = await fetch("/api/products", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ...formData,
+                    images: images.length > 0 ? images : ["/product-placeholder.png"],
+                }),
+            });
+
+            if (res.ok) {
+                router.push("/admin/products");
+            } else {
+                alert("Failed to create product");
+            }
+        } catch (error) {
+            console.error("Error creating product", error);
+        }
     };
 
     return (
@@ -53,7 +99,7 @@ export default function NewProductPage() {
                 </div>
             </div>
 
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Basic Info */}
                 <div className="card p-6 space-y-4">
                     <h2 className="font-display font-semibold text-sm text-surface-900">
@@ -65,6 +111,7 @@ export default function NewProductPage() {
                             Product Name *
                         </label>
                         <input
+                            required
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
@@ -78,6 +125,7 @@ export default function NewProductPage() {
                             Description *
                         </label>
                         <textarea
+                            required
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
@@ -93,6 +141,7 @@ export default function NewProductPage() {
                                 Category *
                             </label>
                             <select
+                                required
                                 name="categoryId"
                                 value={formData.categoryId}
                                 onChange={handleChange}
@@ -117,9 +166,11 @@ export default function NewProductPage() {
                                 className="input-field"
                             >
                                 <option value="">Select supply chain</option>
-                                <option value="1">MedTech Supplies Co.</option>
-                                <option value="2">Global Surgical</option>
-                                <option value="3">HealthCare Direct</option>
+                                {supplyChains.map((sc) => (
+                                    <option key={sc.id} value={sc.id}>
+                                        {sc.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -153,6 +204,7 @@ export default function NewProductPage() {
                                 B2C Price (PKR) *
                             </label>
                             <input
+                                required
                                 name="b2cPrice"
                                 value={formData.b2cPrice}
                                 onChange={handleChange}
@@ -166,6 +218,7 @@ export default function NewProductPage() {
                                 B2B Price (PKR) *
                             </label>
                             <input
+                                required
                                 name="b2bPrice"
                                 value={formData.b2bPrice}
                                 onChange={handleChange}
@@ -179,6 +232,7 @@ export default function NewProductPage() {
                                 Stock Quantity *
                             </label>
                             <input
+                                required
                                 name="stock"
                                 value={formData.stock}
                                 onChange={handleChange}

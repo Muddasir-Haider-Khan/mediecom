@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ProductCard from "./ProductCard";
-import { products } from "@/lib/mock-data";
+// import { products } from "@/lib/mock-data";
 
-export default function FeaturedProducts() {
-    const featuredProducts = products.filter((p) => p.featured);
-
+export default function FeaturedProducts({ products = [] }: { products: any[] }) {
     return (
         <section className="py-12 lg:py-16 bg-surface-50">
             <div className="container-custom">
@@ -28,7 +26,7 @@ export default function FeaturedProducts() {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
-                    {featuredProducts.map((product) => (
+                    {products.map((product) => (
                         <ProductCard
                             key={product.id}
                             id={product.id}

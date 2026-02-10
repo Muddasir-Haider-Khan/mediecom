@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -16,15 +16,41 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { formatCurrency } from "@/lib/utils";
-import { products } from "@/lib/mock-data";
+// import { products } from "@/lib/mock-data";
 
 export default function ProductDetailPage() {
     const params = useParams();
+    const [product, setProduct] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
     const addItem = useCartStore((s) => s.addItem);
 
-    const product = products.find((p) => p.slug === params.slug);
+    useEffect(() => {
+        async function fetchProduct() {
+            try {
+                // params.slug could be an ID or a slug, the API handles both
+                const res = await fetch(`/api/products/${params.slug}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setProduct(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch product", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        if (params.slug) fetchProduct();
+    }, [params.slug]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <p className="text-surface-500">Loading product...</p>
+            </div>
+        );
+    }
 
     if (!product) {
         return (
@@ -104,8 +130,8 @@ export default function ProductDetailPage() {
                                     key={i}
                                     onClick={() => setSelectedImage(i)}
                                     className={`w-20 h-20 rounded-xl border-2 bg-surface-100 flex items-center justify-center text-2xl transition ${selectedImage === i
-                                            ? "border-primary-600"
-                                            : "border-surface-200 hover:border-surface-300"
+                                        ? "border-primary-600"
+                                        : "border-surface-200 hover:border-surface-300"
                                         }`}
                                 >
                                     🏥
@@ -118,7 +144,7 @@ export default function ProductDetailPage() {
                     <div>
                         <div className="flex items-center gap-2 mb-3">
                             <span className="badge-primary text-[10px]">
-                                {product.category.name}
+                                {product.category?.name}
                             </span>
                             {product.trending && (
                                 <span className="badge bg-purple-100 text-purple-800 text-[10px]">
@@ -138,8 +164,8 @@ export default function ProductDetailPage() {
                                     <Star
                                         key={i}
                                         className={`w-4 h-4 ${i < 4
-                                                ? "fill-accent-400 text-accent-400"
-                                                : "fill-surface-200 text-surface-200"
+                                            ? "fill-accent-400 text-accent-400"
+                                            : "fill-surface-200 text-surface-200"
                                             }`}
                                     />
                                 ))}

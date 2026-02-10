@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
     Search,
@@ -14,64 +14,6 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
-const mockOrders = [
-    {
-        id: "MSX-K1ABCD-XY12",
-        customer: "Dr. Ahmed Khan",
-        email: "ahmed@hospital.com",
-        type: "B2C",
-        amount: 45000,
-        items: 3,
-        status: "DELIVERED",
-        date: "2026-02-08",
-        rider: "Hassan",
-    },
-    {
-        id: "MSX-K2EFGH-AB34",
-        customer: "City Hospital Lahore",
-        email: "procurement@cityhospital.pk",
-        type: "B2B",
-        amount: 1285000,
-        items: 15,
-        status: "SHIPPED",
-        date: "2026-02-09",
-        rider: "Ali",
-    },
-    {
-        id: "MSX-K3IJKL-CD56",
-        customer: "Sara Medical Store",
-        email: "sara@medical.pk",
-        type: "B2B",
-        amount: 92000,
-        items: 8,
-        status: "PROCESSING",
-        date: "2026-02-10",
-        rider: null,
-    },
-    {
-        id: "MSX-K4MNOP-EF78",
-        customer: "Dr. Fatima Noor",
-        email: "fatima@clinic.pk",
-        type: "B2C",
-        amount: 18500,
-        items: 1,
-        status: "PENDING",
-        date: "2026-02-10",
-        rider: null,
-    },
-    {
-        id: "MSX-K5QRST-GH90",
-        customer: "National Hospital",
-        email: "orders@national.pk",
-        type: "B2B",
-        amount: 3450000,
-        items: 25,
-        status: "PROCESSING",
-        date: "2026-02-10",
-        rider: null,
-    },
-];
-
 const statusConfig: Record<string, { label: string; class: string; icon: React.ElementType }> = {
     PENDING: { label: "Pending", class: "badge-warning", icon: Clock },
     PROCESSING: { label: "Processing", class: "badge bg-blue-100 text-blue-800", icon: Package },
@@ -82,16 +24,49 @@ const statusConfig: Record<string, { label: string; class: string; icon: React.E
 const riders = ["Hassan", "Ali", "Omar", "Bilal", "Imran"];
 
 export default function AdminOrdersPage() {
+    const [orders, setOrders] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
 
-    const filteredOrders = mockOrders.filter((o) => {
+    useEffect(() => {
+        fetchOrders();
+    }, []);
+
+    async function fetchOrders() {
+        try {
+            const res = await fetch("/api/orders?limit=100");
+            if (res.ok) {
+                const data = await res.json();
+                setOrders(data.orders);
+            }
+        } catch (error) {
+            console.error("Failed to fetch orders", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const filteredOrders = orders.filter((o) => {
         const matchesSearch =
-            o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            o.customer.toLowerCase().includes(searchQuery.toLowerCase());
+            (o.orderNumber || o.id).toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (o.user?.name || "Guest").toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === "all" || o.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
+
+    const updateStatus = async (id: string, newStatus: string) => {
+        try {
+            const res = await fetch(`/api/orders/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            if (res.ok) fetchOrders();
+        } catch (error) {
+            console.error("Failed to update status", error);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -107,7 +82,7 @@ export default function AdminOrdersPage() {
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {Object.entries(statusConfig).map(([key, config]) => {
-                    const count = mockOrders.filter((o) => o.status === key).length;
+                    const count = orders.filter((o) => o.status === key).length;
                     return (
                         <button
                             key={key}
@@ -145,7 +120,7 @@ export default function AdminOrdersPage() {
                     <table className="w-full">
                         <thead>
                             <tr className="bg-surface-50">
-                                {["Order ID", "Customer", "Type", "Amount", "Items", "Status", "Rider", "Actions"].map(
+                                {["Order ID", "Customer", "Amount", "Items", "Status", "Date", "Actions"].map(
                                     (h) => (
                                         <th
                                             key={h}
@@ -158,70 +133,65 @@ export default function AdminOrdersPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-surface-100">
-                            {filteredOrders.map((order) => (
-                                <tr key={order.id} className="hover:bg-surface-50 transition">
-                                    <td className="px-6 py-4 text-xs font-semibold text-primary-700">
-                                        {order.id}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <p className="text-xs font-semibold text-surface-900">
-                                            {order.customer}
-                                        </p>
-                                        <p className="text-[10px] text-surface-500">{order.email}</p>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span
-                                            className={`badge text-[10px] ${order.type === "B2B"
-                                                    ? "bg-primary-100 text-primary-800"
-                                                    : "bg-surface-100 text-surface-800"
-                                                }`}
-                                        >
-                                            {order.type}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-xs font-semibold text-surface-900">
-                                        {formatCurrency(order.amount)}
-                                    </td>
-                                    <td className="px-6 py-4 text-xs text-surface-600">
-                                        {order.items}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <select
-                                            defaultValue={order.status}
-                                            className="text-[10px] font-semibold rounded-full px-2 py-1 border-0 bg-surface-100 focus:ring-2 focus:ring-primary-500/20"
-                                        >
-                                            {Object.entries(statusConfig).map(([key, config]) => (
-                                                <option key={key} value={key}>
-                                                    {config.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <select
-                                            defaultValue={order.rider || ""}
-                                            className="text-[10px] font-medium rounded-full px-2 py-1 border-0 bg-surface-100 focus:ring-2 focus:ring-primary-500/20"
-                                        >
-                                            <option value="">Assign Rider</option>
-                                            {riders.map((r) => (
-                                                <option key={r} value={r}>
-                                                    {r}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-1">
-                                            <button className="p-1.5 rounded-lg hover:bg-surface-100 text-surface-500 transition">
-                                                <Eye className="w-3.5 h-3.5" />
-                                            </button>
-                                            <button className="p-1.5 rounded-lg hover:bg-surface-100 text-surface-500 transition">
-                                                <FileText className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-8 text-center text-sm text-surface-500">
+                                        Loading orders...
                                     </td>
                                 </tr>
-                            ))}
+                            ) : filteredOrders.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-8 text-center text-sm text-surface-500">
+                                        No orders found
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredOrders.map((order) => (
+                                    <tr key={order.id} className="hover:bg-surface-50 transition">
+                                        <td className="px-6 py-4 text-xs font-semibold text-primary-700">
+                                            {order.orderNumber || order.id.slice(0, 8)}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <p className="text-xs font-semibold text-surface-900">
+                                                {order.user?.name || "Guest"}
+                                            </p>
+                                            <p className="text-[10px] text-surface-500">{order.user?.email}</p>
+                                        </td>
+                                        <td className="px-6 py-4 text-xs font-semibold text-surface-900">
+                                            {formatCurrency(order.totalAmount)}
+                                        </td>
+                                        <td className="px-6 py-4 text-xs text-surface-600">
+                                            {order.items?.length || 0} items
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <select
+                                                value={order.status}
+                                                onChange={(e) => updateStatus(order.id, e.target.value)}
+                                                className="text-[10px] font-semibold rounded-full px-2 py-1 border-0 bg-surface-100 focus:ring-2 focus:ring-primary-500/20"
+                                            >
+                                                {Object.entries(statusConfig).map(([key, config]) => (
+                                                    <option key={key} value={key}>
+                                                        {config.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                        <td className="px-6 py-4 text-xs text-surface-500">
+                                            {new Date(order.createdAt).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-1">
+                                                <button className="p-1.5 rounded-lg hover:bg-surface-100 text-surface-500 transition">
+                                                    <Eye className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button className="p-1.5 rounded-lg hover:bg-surface-100 text-surface-500 transition">
+                                                    <FileText className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

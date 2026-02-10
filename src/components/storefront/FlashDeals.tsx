@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Clock, Zap } from "lucide-react";
 import ProductCard from "./ProductCard";
-import { products } from "@/lib/mock-data";
+// import { products } from "@/lib/mock-data";
 
 function CountdownTimer({ targetDate }: { targetDate: Date }) {
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -43,10 +43,8 @@ function CountdownTimer({ targetDate }: { targetDate: Date }) {
     );
 }
 
-export default function FlashDeals() {
-    const flashProducts = products.filter((p) => p.flashDeal);
-
-    if (flashProducts.length === 0) return null;
+export default function FlashDeals({ products = [] }: { products: any[] }) {
+    if (products.length === 0) return null;
 
     return (
         <section className="py-12 lg:py-16">
@@ -80,7 +78,7 @@ export default function FlashDeals() {
 
                 {/* Products */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
-                    {flashProducts.map((product) => (
+                    {products.map((product) => (
                         <ProductCard
                             key={product.id}
                             id={product.id}

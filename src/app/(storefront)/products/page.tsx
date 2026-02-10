@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { SlidersHorizontal, Grid3X3, List, ChevronDown } from "lucide-react";
+import { useEffect, useState, Suspense } from "react";
+import { SlidersHorizontal, ChevronDown, Loader2 } from "lucide-react";
 import ProductCard from "@/components/storefront/ProductCard";
-import { products, categories } from "@/lib/mock-data";
+import { useSearchParams } from "next/navigation";
 
 const sortOptions = [
     { label: "Newest", value: "newest" },
@@ -12,10 +12,45 @@ const sortOptions = [
     { label: "Best Selling", value: "best-selling" },
 ];
 
-export default function ProductsPage() {
+function ProductsContent() {
+    const searchParams = useSearchParams();
+    const searchQuery = searchParams.get("search");
+
+    const [products, setProducts] = useState<any[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
     const [sortBy, setSortBy] = useState("newest");
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+    useEffect(() => {
+        async function fetchData() {
+            setLoading(true);
+            try {
+                let url = "/api/products?limit=100";
+                if (searchQuery) {
+                    url += `&search=${encodeURIComponent(searchQuery)}`;
+                }
+
+                const [prodRes, catRes] = await Promise.all([
+                    fetch(url),
+                    fetch("/api/categories")
+                ]);
+
+                if (prodRes.ok && catRes.ok) {
+                    const prodData = await prodRes.json();
+                    const catData = await catRes.json();
+                    setProducts(prodData.products);
+                    setCategories(catData);
+                }
+            } catch (error) {
+                console.error("Failed to fetch data", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchData();
+    }, [searchQuery]);
 
     const filteredProducts =
         selectedCategory === "all"
@@ -59,8 +94,8 @@ export default function ProductsPage() {
                                 <button
                                     onClick={() => setSelectedCategory("all")}
                                     className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition ${selectedCategory === "all"
-                                            ? "bg-primary-50 text-primary-700"
-                                            : "text-surface-600 hover:bg-surface-50"
+                                        ? "bg-primary-50 text-primary-700"
+                                        : "text-surface-600 hover:bg-surface-50"
                                         }`}
                                 >
                                     All Products
@@ -70,8 +105,8 @@ export default function ProductsPage() {
                                         key={cat.id}
                                         onClick={() => setSelectedCategory(cat.id)}
                                         className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${selectedCategory === cat.id
-                                                ? "bg-primary-50 text-primary-700"
-                                                : "text-surface-600 hover:bg-surface-50"
+                                            ? "bg-primary-50 text-primary-700"
+                                            : "text-surface-600 hover:bg-surface-50"
                                             }`}
                                     >
                                         <span>{cat.icon}</span>
@@ -141,8 +176,8 @@ export default function ProductsPage() {
                                     <button
                                         onClick={() => setSelectedCategory("all")}
                                         className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${selectedCategory === "all"
-                                                ? "bg-primary-700 text-white"
-                                                : "bg-surface-100 text-surface-600 hover:bg-surface-200"
+                                            ? "bg-primary-700 text-white"
+                                            : "bg-surface-100 text-surface-600 hover:bg-surface-200"
                                             }`}
                                     >
                                         All
@@ -152,8 +187,8 @@ export default function ProductsPage() {
                                             key={cat.id}
                                             onClick={() => setSelectedCategory(cat.id)}
                                             className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${selectedCategory === cat.id
-                                                    ? "bg-primary-700 text-white"
-                                                    : "bg-surface-100 text-surface-600 hover:bg-surface-200"
+                                                ? "bg-primary-700 text-white"
+                                                : "bg-surface-100 text-surface-600 hover:bg-surface-200"
                                                 }`}
                                         >
                                             {cat.icon} {cat.name}
@@ -164,25 +199,31 @@ export default function ProductsPage() {
                         )}
 
                         {/* Product Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-                            {sortedProducts.map((product) => (
-                                <ProductCard
-                                    key={product.id}
-                                    id={product.id}
-                                    name={product.name}
-                                    slug={product.slug}
-                                    image={product.images[0]}
-                                    b2cPrice={product.b2cPrice}
-                                    stock={product.stock}
-                                    featured={product.featured}
-                                    trending={product.trending}
-                                    flashDeal={product.flashDeal}
-                                    category={product.category.name}
-                                />
-                            ))}
-                        </div>
+                        {loading ? (
+                            <div className="flex justify-center py-20">
+                                <Loader2 className="w-8 h-8 animate-spin text-surface-400" />
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+                                {sortedProducts.map((product) => (
+                                    <ProductCard
+                                        key={product.id}
+                                        id={product.id}
+                                        name={product.name}
+                                        slug={product.slug}
+                                        image={product.images[0] || ""}
+                                        b2cPrice={product.b2cPrice}
+                                        stock={product.stock}
+                                        featured={product.featured}
+                                        trending={product.trending}
+                                        flashDeal={product.flashDeal}
+                                        category={product.category?.name}
+                                    />
+                                ))}
+                            </div>
+                        )}
 
-                        {sortedProducts.length === 0 && (
+                        {!loading && sortedProducts.length === 0 && (
                             <div className="text-center py-20">
                                 <p className="text-4xl mb-4">🔍</p>
                                 <p className="font-display font-semibold text-surface-900">
@@ -197,5 +238,13 @@ export default function ProductsPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary-600" /></div>}>
+            <ProductsContent />
+        </Suspense>
     );
 }

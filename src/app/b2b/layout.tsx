@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Package, ShoppingCart, FileText, LogOut, Menu, X, Building2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -14,11 +15,24 @@ const links = [
 ];
 
 export default function B2BLayout({ children }: { children: React.ReactNode }) {
+    const { data: session, status } = useSession();
+    const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const pathname = usePathname();
 
+    useEffect(() => {
+        if (status === "loading") return;
+        if (!session || (session.user.role !== "B2B_CLIENT" && session.user.role !== "ADMIN")) {
+            router.push("/b2b/login");
+        }
+    }, [session, status, router]);
+
     if (pathname === "/b2b/login" || pathname === "/b2b/register") {
         return <>{children}</>;
+    }
+
+    if (status === "loading" || !session || (session.user.role !== "B2B_CLIENT" && session.user.role !== "ADMIN")) {
+        return null;
     }
 
     return (

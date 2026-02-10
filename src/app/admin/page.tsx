@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
     DollarSign,
     ShoppingCart,
@@ -26,18 +27,44 @@ import {
 import { formatCurrency } from "@/lib/utils";
 
 // Mock analytics data
+// Real stats state
+const [realStats, setRealStats] = useState({
+    revenue: 0,
+    orders: 0,
+    products: 0,
+    users: 0,
+});
+const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+    async function fetchStats() {
+        try {
+            const res = await fetch("/api/dashboard/stats");
+            if (res.ok) {
+                const data = await res.json();
+                setRealStats(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch stats", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+    fetchStats();
+}, []);
+
 const stats = [
     {
         label: "Total Revenue",
-        value: "PKR 2.5M",
-        change: "+12.5%",
+        value: loading ? "..." : formatCurrency(realStats.revenue),
+        change: "+12.5%", // pending historical data
         isUp: true,
         icon: DollarSign,
         color: "text-emerald-600 bg-emerald-50",
     },
     {
         label: "Total Orders",
-        value: "348",
+        value: loading ? "..." : realStats.orders.toString(),
         change: "+8.2%",
         isUp: true,
         icon: ShoppingCart,
@@ -45,7 +72,7 @@ const stats = [
     },
     {
         label: "Products",
-        value: "156",
+        value: loading ? "..." : realStats.products.toString(),
         change: "+3",
         isUp: true,
         icon: Package,
@@ -53,9 +80,9 @@ const stats = [
     },
     {
         label: "Active Users",
-        value: "1,245",
-        change: "-2.1%",
-        isUp: false,
+        value: loading ? "..." : realStats.users.toString(),
+        change: "+5",
+        isUp: true,
         icon: Users,
         color: "text-orange-600 bg-orange-50",
     },

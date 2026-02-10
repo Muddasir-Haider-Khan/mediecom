@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { categories } from "@/lib/mock-data";
+// import { categories } from "@/lib/mock-data";
 
-export default function CategoryGrid() {
+export default function CategoryGrid({ categories = [] }: { categories: any[] }) {
     return (
         <section className="py-12 lg:py-16">
             <div className="container-custom">
@@ -18,7 +18,7 @@ export default function CategoryGrid() {
                     {categories.map((cat) => (
                         <Link
                             key={cat.id}
-                            href={`/products?category=${cat.slug}`}
+                            href={`/products?category=${cat.id}`}
                             className="group flex flex-col items-center gap-3 p-4 lg:p-6 rounded-2xl bg-white border border-surface-100 hover:border-primary-200 hover:shadow-glow transition-all duration-300"
                         >
                             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300">
