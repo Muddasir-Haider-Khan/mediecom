@@ -135,8 +135,15 @@ export default function LoginPage() {
                         </div>
                     </div>
 
+                    {/* Error */}
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                            {error}
+                        </div>
+                    )}
+
                     {/* Form */}
-                    <form className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         {!isLogin && (
                             <div>
                                 <label className="text-xs font-semibold text-surface-700 mb-1 block">
@@ -216,9 +223,15 @@ export default function LoginPage() {
                             </div>
                         )}
 
-                        <button type="submit" className="btn-primary w-full justify-center">
-                            {isLogin ? "Sign In" : "Create Account"}
-                            <ArrowRight className="w-4 h-4" />
+                        <button type="submit" disabled={loading} className="btn-primary w-full justify-center">
+                            {loading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <>
+                                    {isLogin ? "Sign In" : "Create Account"}
+                                    <ArrowRight className="w-4 h-4" />
+                                </>
+                            )}
                         </button>
                     </form>
 
