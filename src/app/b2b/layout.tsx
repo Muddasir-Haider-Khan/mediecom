@@ -32,7 +32,11 @@ export default function B2BLayout({ children }: { children: React.ReactNode }) {
     }
 
     if (status === "loading" || !session || (session.user.role !== "B2B_CLIENT" && session.user.role !== "ADMIN")) {
-        return null;
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-surface-50">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            </div>
+        );
     }
 
     return (

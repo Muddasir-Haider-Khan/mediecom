@@ -26,68 +26,7 @@ import {
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 
-// Mock analytics data
-// Real stats state
-const [realStats, setRealStats] = useState({
-    revenue: 0,
-    orders: 0,
-    products: 0,
-    users: 0,
-});
-const [loading, setLoading] = useState(true);
-
-useEffect(() => {
-    async function fetchStats() {
-        try {
-            const res = await fetch("/api/dashboard/stats");
-            if (res.ok) {
-                const data = await res.json();
-                setRealStats(data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch stats", error);
-        } finally {
-            setLoading(false);
-        }
-    }
-    fetchStats();
-}, []);
-
-const stats = [
-    {
-        label: "Total Revenue",
-        value: loading ? "..." : formatCurrency(realStats.revenue),
-        change: "+12.5%", // pending historical data
-        isUp: true,
-        icon: DollarSign,
-        color: "text-emerald-600 bg-emerald-50",
-    },
-    {
-        label: "Total Orders",
-        value: loading ? "..." : realStats.orders.toString(),
-        change: "+8.2%",
-        isUp: true,
-        icon: ShoppingCart,
-        color: "text-blue-600 bg-blue-50",
-    },
-    {
-        label: "Products",
-        value: loading ? "..." : realStats.products.toString(),
-        change: "+3",
-        isUp: true,
-        icon: Package,
-        color: "text-purple-600 bg-purple-50",
-    },
-    {
-        label: "Active Users",
-        value: loading ? "..." : realStats.users.toString(),
-        change: "+5",
-        isUp: true,
-        icon: Users,
-        color: "text-orange-600 bg-orange-50",
-    },
-];
-
+// Static mock data (kept outside component — no hooks needed)
 const revenueData = [
     { month: "Jan", revenue: 180000, orders: 42 },
     { month: "Feb", revenue: 220000, orders: 51 },
@@ -122,6 +61,66 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
+    const [realStats, setRealStats] = useState({
+        revenue: 0,
+        orders: 0,
+        products: 0,
+        users: 0,
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchStats() {
+            try {
+                const res = await fetch("/api/dashboard/stats");
+                if (res.ok) {
+                    const data = await res.json();
+                    setRealStats(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch stats", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchStats();
+    }, []);
+
+    const stats = [
+        {
+            label: "Total Revenue",
+            value: loading ? "..." : formatCurrency(realStats.revenue),
+            change: "+12.5%",
+            isUp: true,
+            icon: DollarSign,
+            color: "text-emerald-600 bg-emerald-50",
+        },
+        {
+            label: "Total Orders",
+            value: loading ? "..." : realStats.orders.toString(),
+            change: "+8.2%",
+            isUp: true,
+            icon: ShoppingCart,
+            color: "text-blue-600 bg-blue-50",
+        },
+        {
+            label: "Products",
+            value: loading ? "..." : realStats.products.toString(),
+            change: "+3",
+            isUp: true,
+            icon: Package,
+            color: "text-purple-600 bg-purple-50",
+        },
+        {
+            label: "Active Users",
+            value: loading ? "..." : realStats.users.toString(),
+            change: "+5",
+            isUp: true,
+            icon: Users,
+            color: "text-orange-600 bg-orange-50",
+        },
+    ];
+
     return (
         <div className="space-y-6">
             <div>

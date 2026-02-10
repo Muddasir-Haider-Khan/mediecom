@@ -29,7 +29,7 @@ function ProductsContent() {
             try {
                 let url = "/api/products?limit=100";
                 if (searchQuery) {
-                    url += `&search=${encodeURIComponent(searchQuery)}`;
+                    url += `&q=${encodeURIComponent(searchQuery)}`;
                 }
 
                 const [prodRes, catRes] = await Promise.all([

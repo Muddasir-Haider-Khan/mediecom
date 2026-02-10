@@ -72,7 +72,7 @@ export default function CustomerDashboard() {
         });
     }
 
-    if (status === "loading" || (loading && status === "authenticated")) {
+    if (status === "loading" || status === "unauthenticated" || (loading && status === "authenticated")) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-surface-50">
                 <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
