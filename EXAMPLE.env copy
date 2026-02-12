@@ -1,0 +1,17 @@
+# Database (Prisma Accelerate)
+DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza19oOU9VRjZkdzdXRDduR2RfNXBfYUEiLCJhcGlfa2V5IjoiMDFLSDJBUlNDUVJTMzFHSDNTRTdCRTBTUTgiLCJ0ZW5hbnRfaWQiOiIzMjg2YThlMzkzYWM2ODFjOTJmYzBhNDg4ZWUxNThmZmMzYzk3YTM2YmY2OTNiNjVhYzMxNTEyNGZjNThmNzUxIiwiaW50ZXJuYWxfc2VjcmV0IjoiMTM2N2QzZjgtYTAwNS00Mzg5LTg2MzktOGE2MmJhMDgzMGIwIn0.aAiUY5s_kEZSSeepev3y_lMrTVrEk10UrLE9n5hZTUw"
+DIRECT_URL="postgres://3286a8e393ac681c92fc0a488ee158ffc3c97a36bf693b65ac315124fc58f751:sk_h9OUF6dw7WD7nGd_5p_aA@db.prisma.io:5432/postgres?sslmode=require"
+
+# NextAuth
+NEXTAUTH_SECRET="fec9c30f0f354e601556156372864627"
+NEXTAUTH_URL="http://localhost:3000"
+AUTH_URL="http://localhost:3000"
+
+# Google OAuth (optional — credential auth works without these)
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+
+# App
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_WHATSAPP_NUMBER="+923352767961"
+AUTH_TRUST_HOST=true
