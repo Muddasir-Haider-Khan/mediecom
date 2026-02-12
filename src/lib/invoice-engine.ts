@@ -69,7 +69,7 @@ export class InvoiceEngine {
 
       // 5. Calculate financials
       const subtotal = order.items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (sum: number, item: any) => sum + item.price * item.quantity,
         0
       );
       const taxRate = isB2B ? 0 : 0; // Can be configured per template
@@ -125,7 +125,7 @@ export class InvoiceEngine {
           orderId: order.id,
           templateId: template?.id || null,
           items: {
-            create: order.items.map((item) => ({
+            create: order.items.map((item: any) => ({
               name: item.product.name,
               description: item.product.description || null,
               quantity: item.quantity,
