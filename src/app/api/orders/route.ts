@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateOrderNumber } from "@/lib/utils";
 import { InvoiceEngine } from "@/lib/invoice-engine";
+import { LeopardService } from "@/lib/leopard-service";
 
 export async function GET(req: NextRequest) {
     const session = await auth();
@@ -153,8 +154,50 @@ export async function POST(req: NextRequest) {
             console.error("Auto-invoice generation failed:", invoiceResult.error);
         }
 
+        // Auto-create Leopard shipment if enabled
+        let leopardShipment = null;
+        try {
+            const config = await db.leopardConfig.findFirst();
+            const shouldCreateShipment =
+                config?.isEnabled &&
+                ((isB2B && config?.enableB2B) || (!isB2B && config?.enableB2C));
+
+            if (shouldCreateShipment) {
+                // Get user details for shipment
+                const fullUser = await db.user.findUnique({
+                    where: { id: session.user.id },
+                    select: { name: true, email: true, phone: true },
+                });
+
+                const shipmentPayload = {
+                    recipientName: fullUser?.name || "Customer",
+                    recipientPhone: phone || fullUser?.phone || "",
+                    recipientEmail: fullUser?.email,
+                    recipientAddress: shippingAddress,
+                    recipientCity: "Islamabad", // TODO: Extract from address
+                    pieces: orderItemsData.length,
+                    weight: 1, // TODO: Calculate from products
+                    itemDescription: "Medical & Surgical Supplies",
+                    itemValue: totalAmount,
+                    cod: paymentMethod === "COD" ? totalAmount : undefined,
+                    orderReference: order.orderNumber,
+                };
+
+                leopardShipment = await LeopardService.createShipment(order.id, shipmentPayload);
+            }
+        } catch (error) {
+            console.error("Leopard shipment creation failed:", error);
+            // Don't fail the order creation if Leopard fails
+        }
+
         return NextResponse.json(
-            { ...order, invoiceGenerated: invoiceResult.success, invoiceNumber: invoiceResult.invoiceNumber },
+            {
+                ...order,
+                invoiceGenerated: invoiceResult.success,
+                invoiceNumber: invoiceResult.invoiceNumber,
+                leopardShipmentCreated: !!leopardShipment,
+                trackingNumber: leopardShipment?.trackingNumber || null,
+            },
             { status: 201 }
         );
     } catch (error) {

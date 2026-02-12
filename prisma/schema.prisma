@@ -60,6 +60,22 @@ enum SalesChannel {
   TIKTOK
 }
 
+enum ShipmentStatus {
+  PENDING
+  CREATED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  CANCELLED
+  RETURNED
+}
+
+enum ShipmentSource {
+  INTERNAL
+  LEOPARD
+}
+
 // ─── Auth Models (NextAuth) ──────────────────────────────
 
 model User {
@@ -254,6 +270,7 @@ model Order {
   items           OrderItem[]
   invoice         Invoice?
   tracking        DeliveryTracking[]
+  leopardShipment LeopardShipment?
 
   @@map("orders")
 }
@@ -382,15 +399,60 @@ model InvoiceTemplate {
 // ─── Delivery Tracking ──────────────────────────────────
 
 model DeliveryTracking {
-  id        String      @id @default(cuid())
-  status    OrderStatus
+  id        String           @id @default(cuid())
+  status    ShipmentStatus
   message   String?
   location  String?
-  timestamp DateTime    @default(now())
+  source    ShipmentSource   @default(INTERNAL)
+  timestamp DateTime         @default(now())
   orderId   String
-  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order     Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("delivery_tracking")
+}
+
+// ─── Leopard Integration ─────────────────────────────────
+
+model LeopardConfig {
+  id                String   @id @default(cuid())
+  apiKey            String   @db.Text
+  apiSecret         String   @db.Text
+  hubId             String
+  webhookSecret     String?  @db.Text
+  isEnabled         Boolean  @default(true)
+  enableB2C         Boolean  @default(true)
+  enableB2B         Boolean  @default(true)
+  bulkCreateEnabled Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("leopard_config")
+}
+
+model LeopardShipment {
+  id              String          @id @default(cuid())
+  shipmentId      String          @unique
+  trackingNumber  String          @unique
+  status          ShipmentStatus  @default(CREATED)
+  labelUrl        String?
+  estimatedDelivery DateTime?
+  actualDelivery  DateTime?
+  weight          Float?
+  dimensions      String?         @db.Text
+  
+  orderId         String          @unique
+  order           Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  lastStatusUpdate DateTime?
+  errorMessage    String?         @db.Text
+  retryCount      Int             @default(0)
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([status])
+  @@index([trackingNumber])
+  @@map("leopard_shipments")
 }
 
 // ─── Sales Records ──────────────────────────────────────

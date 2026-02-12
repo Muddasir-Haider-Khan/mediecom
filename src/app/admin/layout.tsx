@@ -20,6 +20,7 @@ import {
     Search,
     LogOut,
     Palette,
+    Truck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ const sidebarLinks = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Products", href: "/admin/products", icon: Package },
     { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
+    { name: "Shipments", href: "/admin/shipments", icon: Truck },
     { name: "Supply Chains", href: "/admin/supply-chains", icon: Link2 },
     { name: "Users", href: "/admin/users", icon: Users },
     { name: "Sales Tracking", href: "/admin/sales", icon: TrendingUp },
