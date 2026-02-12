@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Upload, Plus, X } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Upload, Plus, X, Loader2 } from "lucide-react";
 
 export default function NewProductPage() {
     const router = useRouter();
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [images, setImages] = useState<string[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState("");
     const [categories, setCategories] = useState<any[]>([]);
     const [supplyChains, setSupplyChains] = useState<any[]>([]);
     const [formData, setFormData] = useState({
@@ -55,6 +59,65 @@ export default function NewProductPage() {
             [name]:
                 type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
         }));
+    };
+
+    const handleFileSelect = async (files: FileList | null) => {
+        if (!files || files.length === 0) return;
+        setUploadError("");
+        setUploading(true);
+
+        try {
+            const formPayload = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.startsWith("image/")) {
+                    setUploadError(`"${file.name}" is not a valid image file.`);
+                    setUploading(false);
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    setUploadError(`"${file.name}" exceeds the 5MB size limit.`);
+                    setUploading(false);
+                    return;
+                }
+                formPayload.append("files", file);
+            }
+
+            const res = await fetch("/api/upload", {
+                method: "POST",
+                body: formPayload,
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                setUploadError(data.error || "Upload failed");
+                setUploading(false);
+                return;
+            }
+
+            const data = await res.json();
+            setImages((prev) => [...prev, ...data.paths]);
+        } catch {
+            setUploadError("Upload failed. Please try again.");
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleFileSelect(e.dataTransfer.files);
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const removeImage = (index: number) => {
+        setImages((prev) => prev.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -181,15 +244,72 @@ export default function NewProductPage() {
                     <h2 className="font-display font-semibold text-sm text-surface-900">
                         Product Images
                     </h2>
-                    <div className="border-2 border-dashed border-surface-200 rounded-2xl p-8 text-center hover:border-primary-400 transition cursor-pointer">
-                        <Upload className="w-8 h-8 text-surface-400 mx-auto mb-3" />
-                        <p className="text-sm font-medium text-surface-700">
-                            Click to upload or drag and drop
-                        </p>
-                        <p className="text-xs text-surface-500 mt-1">
-                            PNG, JPG up to 5MB. Recommended: 800×800px
-                        </p>
+
+                    {/* Image Previews */}
+                    {images.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {images.map((src, i) => (
+                                <div key={i} className="relative group rounded-xl overflow-hidden border border-surface-200 aspect-square">
+                                    <Image
+                                        src={src}
+                                        alt={`Product image ${i + 1}`}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeImage(i)}
+                                        className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Upload Area */}
+                    <div
+                        onClick={() => !uploading && fileInputRef.current?.click()}
+                        onDrop={handleDrop}
+                        onDragOver={handleDragOver}
+                        className={`border-2 border-dashed rounded-2xl p-8 text-center transition cursor-pointer ${
+                            uploading
+                                ? "border-primary-400 bg-primary-50"
+                                : "border-surface-200 hover:border-primary-400"
+                        }`}
+                    >
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/png,image/jpeg,image/jpg,image/webp"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => handleFileSelect(e.target.files)}
+                        />
+                        {uploading ? (
+                            <>
+                                <Loader2 className="w-8 h-8 text-primary-500 mx-auto mb-3 animate-spin" />
+                                <p className="text-sm font-medium text-primary-700">
+                                    Uploading...
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <Upload className="w-8 h-8 text-surface-400 mx-auto mb-3" />
+                                <p className="text-sm font-medium text-surface-700">
+                                    Click to upload or drag and drop
+                                </p>
+                                <p className="text-xs text-surface-500 mt-1">
+                                    PNG, JPG, WebP up to 5MB. Recommended: 800×800px
+                                </p>
+                            </>
+                        )}
                     </div>
+
+                    {uploadError && (
+                        <p className="text-xs text-red-600 font-medium">{uploadError}</p>
+                    )}
                 </div>
 
                 {/* Pricing */}
