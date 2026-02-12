@@ -19,7 +19,7 @@ export default function B2BOrdersPage() {
     useEffect(() => {
         async function fetchOrders() {
             try {
-                const res = await fetch("/api/orders?limit=50");
+                const res = await fetch("/api/orders?limit=50&includeInvoice=true");
                 if (res.ok) {
                     const data = await res.json();
                     setOrders(data.orders);
@@ -79,9 +79,19 @@ export default function B2BOrdersPage() {
                                                 {order.estimatedDelivery ? formatDate(order.estimatedDelivery) : "TBD"}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <button className="p-1.5 rounded-lg hover:bg-surface-100 text-surface-400 transition" disabled>
-                                                    <FileText className="w-3.5 h-3.5" />
-                                                </button>
+                                                {order.invoice ? (
+                                                    <button
+                                                        onClick={() => window.open(`/api/invoices/${order.invoice.id}?format=html`, "_blank")}
+                                                        className="p-1.5 rounded-lg hover:bg-surface-100 text-primary-600 transition"
+                                                        title="View Invoice"
+                                                    >
+                                                        <FileText className="w-3.5 h-3.5" />
+                                                    </button>
+                                                ) : (
+                                                    <button className="p-1.5 rounded-lg text-surface-300 cursor-not-allowed" disabled>
+                                                        <FileText className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     );

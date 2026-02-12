@@ -19,6 +19,7 @@ import {
     Bell,
     Search,
     LogOut,
+    Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,7 @@ const sidebarLinks = [
     { name: "Users", href: "/admin/users", icon: Users },
     { name: "Sales Tracking", href: "/admin/sales", icon: TrendingUp },
     { name: "Invoices", href: "/admin/invoices", icon: FileText },
+    { name: "Invoice Templates", href: "/admin/invoices/templates", icon: Palette },
     { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

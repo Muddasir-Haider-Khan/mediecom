@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateOrderNumber } from "@/lib/utils";
+import { InvoiceEngine } from "@/lib/invoice-engine";
 
 export async function GET(req: NextRequest) {
     const session = await auth();
@@ -14,6 +15,7 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
     const skip = (page - 1) * limit;
+    const includeInvoice = searchParams.get("includeInvoice") === "true";
 
     const where: any = {};
 
@@ -50,6 +52,7 @@ export async function GET(req: NextRequest) {
                     user: { select: { name: true, email: true } },
                     items: true,
                     organization: { select: { name: true } },
+                    ...(includeInvoice ? { invoice: { select: { id: true, invoiceNumber: true, status: true } } } : {}),
                 },
                 orderBy: { createdAt: "desc" },
                 skip,
@@ -83,7 +86,7 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json();
-        const { items, shippingAddress, phone, notes } = body;
+        const { items, shippingAddress, phone, notes, paymentMethod = "COD" } = body;
 
         if (!items || items.length === 0) {
             return NextResponse.json(
@@ -99,6 +102,9 @@ export async function POST(req: NextRequest) {
         });
 
         const isB2B = user?.role === "B2B_CLIENT";
+
+        // Determine payment status based on method
+        const paymentStatus = paymentMethod === "JAZZCASH" ? "PAID" : "PENDING";
 
         // Calculate total
         let totalAmount = 0;
@@ -133,13 +139,24 @@ export async function POST(req: NextRequest) {
                 shippingAddress,
                 phone,
                 notes,
+                paymentMethod: paymentMethod as any,
+                paymentStatus: paymentStatus as any,
                 items: {
                     create: orderItemsData,
                 },
             },
         });
 
-        return NextResponse.json(order, { status: 201 });
+        // Auto-generate invoice
+        const invoiceResult = await InvoiceEngine.generateFromOrder(order.id);
+        if (!invoiceResult.success) {
+            console.error("Auto-invoice generation failed:", invoiceResult.error);
+        }
+
+        return NextResponse.json(
+            { ...order, invoiceGenerated: invoiceResult.success, invoiceNumber: invoiceResult.invoiceNumber },
+            { status: 201 }
+        );
     } catch (error) {
         console.error("Create order error:", error);
         return NextResponse.json(

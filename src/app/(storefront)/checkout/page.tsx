@@ -15,6 +15,7 @@ export default function CheckoutPage() {
     const { items, totalPrice, clearCart } = useCartStore();
 
     const [loading, setLoading] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState("COD");
     const [formData, setFormData] = useState({
         address: "",
         city: "",
@@ -75,6 +76,7 @@ export default function CheckoutPage() {
                     shippingAddress,
                     phone: formData.phone,
                     notes: formData.notes,
+                    paymentMethod,
                 }),
             });
 
@@ -179,13 +181,21 @@ export default function CheckoutPage() {
                                     <CreditCard className="w-5 h-5 text-primary-600" />
                                     Payment Method
                                 </h2>
-                                <label className="flex items-center gap-4 p-4 border-2 border-primary-100 bg-primary-50/50 rounded-xl cursor-pointer">
-                                    <input type="radio" name="payment" defaultChecked className="w-5 h-5 text-primary-600 focus:ring-primary-500" />
+                                <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition ${paymentMethod === 'COD' ? 'border-primary-500 bg-primary-50/50' : 'border-surface-200 hover:border-surface-300'}`}>
+                                    <input type="radio" name="payment" value="COD" checked={paymentMethod === 'COD'} onChange={() => setPaymentMethod('COD')} className="w-5 h-5 text-primary-600 focus:ring-primary-500" />
                                     <div className="flex-1">
-                                        <div className="font-semibold text-surface-900">Cash upon Delivery</div>
+                                        <div className="font-semibold text-surface-900">Cash on Delivery</div>
                                         <div className="text-sm text-surface-500">Pay securely when you receive your order</div>
                                     </div>
                                     <span className="text-2xl">💵</span>
+                                </label>
+                                <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition mt-3 ${paymentMethod === 'JAZZCASH' ? 'border-primary-500 bg-primary-50/50' : 'border-surface-200 hover:border-surface-300'}`}>
+                                    <input type="radio" name="payment" value="JAZZCASH" checked={paymentMethod === 'JAZZCASH'} onChange={() => setPaymentMethod('JAZZCASH')} className="w-5 h-5 text-primary-600 focus:ring-primary-500" />
+                                    <div className="flex-1">
+                                        <div className="font-semibold text-surface-900">JazzCash</div>
+                                        <div className="text-sm text-surface-500">Pay via JazzCash mobile wallet</div>
+                                    </div>
+                                    <span className="text-2xl">📱</span>
                                 </label>
                             </div>
                         </form>
